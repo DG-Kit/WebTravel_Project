@@ -1,0 +1,35 @@
+# ========================
+# SECURITY - DO NOT COMMIT
+# ========================
+.env
+.env.*
+!.env.example
+
+# ========================
+# EXCLUDE FROM REPO (by user request)
+# ========================
+*.uml
+
+# ========================
+# Backend
+# ========================
+backend/node_modules/
+backend/dist/
+backend/test-db.js
+backend/test-db.ts
+
+# ========================
+# Frontend
+# ========================
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# ========================
+# General
+# ========================
+node_modules/
+dist/
+*.log
+.DS_Store
+Thumbs.db

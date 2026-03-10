@@ -28,7 +28,7 @@ WebTravel là hệ thống web hỗ trợ người dùng **tìm kiếm và đặ
 - **Frontend**: React / Next.js.
 - **Backend**: Node.js (Express), JWT cho xác thực.
 - **AI Service**: Python (FastAPI, Numpy, Pandas, Scikit-learn,...).
-- **Cơ sở dữ liệu**: MongoDB hoặc PostgreSQL.
+- **Cơ sở dữ liệu**: MSSQL.
 - **Tích hợp API**: Map API, Weather API (phục vụ hiển thị bản đồ, thông tin thời tiết,...).
 
 ## Kiến trúc & luồng hoạt động

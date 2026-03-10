@@ -1,0 +1,296 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model User {
+  user_id               Int                  @id @default(autoincrement())
+  email                 String               @unique @db.VarChar(255)
+  password_hash         String               @db.VarChar(255)
+  full_name             String?              @db.NVarChar(255)
+  phone                 String?              @db.VarChar(20)
+  role                  String               @default("USER") @db.VarChar(50)
+  is_active             Boolean              @default(true)
+  created_at            DateTime             @default(now())
+  updated_at            DateTime             @updatedAt
+  auth_tokens           AuthToken[]
+  bookings              Booking[]
+  email_verifications   EmailVerification[]
+  favorites             Favorite[]
+  owned_hotels          Hotel[]              @relation("HotelOwner")
+  notifications         Notification[]
+  password_reset_tokens PasswordResetToken[]
+  recommendation_logs   RecommendationLog[]
+  reviews               Review[]
+  user_coupons          UserCoupon[]
+  user_preferences      UserPreference?
+  search_history        UserSearchHistory[]
+}
+
+model AuthToken {
+  token_id      Int      @id @default(autoincrement())
+  access_token  String   @db.VarChar(500)
+  refresh_token String   @db.VarChar(500)
+  expires_at    DateTime
+  created_at    DateTime @default(now())
+  user_id       Int
+  user          User     @relation(fields: [user_id], references: [user_id])
+}
+
+model EmailVerification {
+  verification_id    Int       @id @default(autoincrement())
+  verification_token String    @unique @db.VarChar(255)
+  expires_at         DateTime
+  verified_at        DateTime?
+  user_id            Int
+  user               User      @relation(fields: [user_id], references: [user_id])
+}
+
+model PasswordResetToken {
+  reset_id    Int      @id @default(autoincrement())
+  reset_token String   @unique @db.VarChar(255)
+  expires_at  DateTime
+  used        Boolean  @default(false)
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [user_id])
+}
+
+model UserPreference {
+  preference_id        Int      @id @default(autoincrement())
+  preferred_categories String?  @db.VarChar(255)
+  travel_style         String?  @db.VarChar(100)
+  budget_level         Int?
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+  user_id              Int      @unique
+  user                 User     @relation(fields: [user_id], references: [user_id])
+}
+
+model Tag {
+  tag_id          Int             @id @default(autoincrement())
+  name            String          @unique @db.VarChar(100)
+  type            String          @db.VarChar(50)
+  attraction_tags AttractionTag[]
+  hotel_tags      HotelTag[]
+}
+
+model HotelTag {
+  hotel_id Int
+  tag_id   Int
+  hotel    Hotel @relation(fields: [hotel_id], references: [hotel_id])
+  tag      Tag   @relation(fields: [tag_id], references: [tag_id])
+
+  @@id([hotel_id, tag_id])
+}
+
+model AttractionTag {
+  attraction_id Int
+  tag_id        Int
+  attraction    Attraction @relation(fields: [attraction_id], references: [attraction_id])
+  tag           Tag        @relation(fields: [tag_id], references: [tag_id])
+
+  @@id([attraction_id, tag_id])
+}
+
+model Location {
+  location_id Int          @id @default(autoincrement())
+  name        String       @db.NVarChar(255)
+  country     String       @db.NVarChar(255)
+  latitude    Float
+  longitude   Float
+  attractions Attraction[]
+  hotels      Hotel[]
+}
+
+model Attraction {
+  attraction_id      Int             @id @default(autoincrement())
+  name               String          @db.NVarChar(255)
+  category           String?         @db.VarChar(100)
+  description        String?         @db.NText
+  popularity_score   Float           @default(0.0)
+  best_time_to_visit String?         @db.VarChar(100)
+  location_id        Int
+  location           Location        @relation(fields: [location_id], references: [location_id])
+  tags               AttractionTag[]
+}
+
+model Hotel {
+  hotel_id         Int                 @id @default(autoincrement())
+  name             String              @db.NVarChar(255)
+  address          String              @db.NVarChar(500)
+  star_rating      Int                 @default(0)
+  average_rating   Float               @default(0.0)
+  popularity_score Float               @default(0.0)
+  is_active        Boolean             @default(true)
+  description      String?             @db.NText
+  owner_id         Int
+  location_id      Int
+  bookings         Booking[]
+  favorites        Favorite[]
+  location         Location            @relation(fields: [location_id], references: [location_id])
+  owner            User                @relation("HotelOwner", fields: [owner_id], references: [user_id])
+  amenities        HotelAmenity[]
+  images           HotelImage[]
+  tags             HotelTag[]
+  recommendations  RecommendationLog[]
+  reviews          Review[]
+  rooms            Room[]
+}
+
+model HotelImage {
+  image_id  Int    @id @default(autoincrement())
+  image_url String @db.VarChar(500)
+  hotel_id  Int
+  hotel     Hotel  @relation(fields: [hotel_id], references: [hotel_id])
+}
+
+model HotelAmenity {
+  amenity_id   Int    @id @default(autoincrement())
+  amenity_name String @db.VarChar(100)
+  hotel_id     Int
+  hotel        Hotel  @relation(fields: [hotel_id], references: [hotel_id])
+}
+
+model Room {
+  room_id         Int             @id @default(autoincrement())
+  room_type       String          @db.VarChar(100)
+  price           Decimal         @db.Decimal(18, 2)
+  capacity        Int
+  is_available    Boolean         @default(true)
+  hotel_id        Int
+  booking_details BookingDetail[]
+  hotel           Hotel           @relation(fields: [hotel_id], references: [hotel_id])
+  images          RoomImage[]
+}
+
+model RoomImage {
+  image_id  Int    @id @default(autoincrement())
+  image_url String @db.VarChar(500)
+  room_id   Int
+  room      Room   @relation(fields: [room_id], references: [room_id])
+}
+
+model Booking {
+  booking_id     BigInt          @id @default(autoincrement())
+  check_in       DateTime        @db.Date
+  check_out      DateTime        @db.Date
+  guests         Int
+  total_price    Decimal         @db.Decimal(18, 2)
+  booking_status String          @db.VarChar(50)
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  user_id        Int
+  hotel_id       Int
+  hotel          Hotel           @relation(fields: [hotel_id], references: [hotel_id], onUpdate: NoAction)
+  user           User            @relation(fields: [user_id], references: [user_id], onUpdate: NoAction)
+  coupons        BookingCoupon[]
+  details        BookingDetail[]
+  payment        Payment?
+}
+
+model BookingDetail {
+  booking_detail_id BigInt  @id @default(autoincrement())
+  quantity          Int     @default(1)
+  price_at_booking  Decimal @db.Decimal(18, 2)
+  booking_id        BigInt
+  room_id           Int
+  booking           Booking @relation(fields: [booking_id], references: [booking_id])
+  room              Room    @relation(fields: [room_id], references: [room_id], onUpdate: NoAction)
+}
+
+model Payment {
+  payment_id     BigInt    @id @default(autoincrement())
+  payment_method String    @db.VarChar(100)
+  payment_status String    @db.VarChar(50)
+  amount         Decimal   @db.Decimal(18, 2)
+  paid_at        DateTime?
+  booking_id     BigInt    @unique
+  booking        Booking   @relation(fields: [booking_id], references: [booking_id])
+}
+
+model BookingCoupon {
+  id              BigInt  @id @default(autoincrement())
+  discount_amount Decimal @db.Decimal(18, 2)
+  booking_id      BigInt
+  coupon_id       Int
+  booking         Booking @relation(fields: [booking_id], references: [booking_id])
+  coupon          Coupon  @relation(fields: [coupon_id], references: [coupon_id])
+}
+
+model Coupon {
+  coupon_id       Int             @id @default(autoincrement())
+  code            String          @unique @db.VarChar(50)
+  discount_type   String          @db.VarChar(50)
+  discount_value  Decimal         @db.Decimal(18, 2)
+  max_discount    Decimal         @db.Decimal(18, 2)
+  expiry_date     DateTime
+  usage_limit     Int
+  is_active       Boolean         @default(true)
+  created_at      DateTime        @default(now())
+  booking_coupons BookingCoupon[]
+  user_coupons    UserCoupon[]
+}
+
+model UserCoupon {
+  user_coupon_id Int       @id @default(autoincrement())
+  used           Boolean   @default(false)
+  used_at        DateTime?
+  user_id        Int
+  coupon_id      Int
+  coupon         Coupon    @relation(fields: [coupon_id], references: [coupon_id])
+  user           User      @relation(fields: [user_id], references: [user_id])
+}
+
+model Review {
+  review_id  BigInt   @id @default(autoincrement())
+  rating     Int
+  comment    String?  @db.NText
+  created_at DateTime @default(now())
+  user_id    Int
+  hotel_id   Int
+  hotel      Hotel    @relation(fields: [hotel_id], references: [hotel_id], onUpdate: NoAction)
+  user       User     @relation(fields: [user_id], references: [user_id], onUpdate: NoAction)
+}
+
+model Favorite {
+  favorite_id Int      @id @default(autoincrement())
+  created_at  DateTime @default(now())
+  user_id     Int
+  hotel_id    Int
+  hotel       Hotel    @relation(fields: [hotel_id], references: [hotel_id], onUpdate: NoAction)
+  user        User     @relation(fields: [user_id], references: [user_id], onUpdate: NoAction)
+}
+
+model Notification {
+  notification_id BigInt   @id @default(autoincrement())
+  title           String   @db.NVarChar(255)
+  message         String   @db.NText
+  type            String   @db.VarChar(50)
+  is_read         Boolean  @default(false)
+  created_at      DateTime @default(now())
+  user_id         Int
+  user            User     @relation(fields: [user_id], references: [user_id])
+}
+
+model UserSearchHistory {
+  search_id   BigInt   @id @default(autoincrement())
+  budget      Decimal? @db.Decimal(18, 2)
+  travel_type String?  @db.VarChar(100)
+  created_at  DateTime @default(now())
+  user_id     Int
+  location_id Int
+  user        User     @relation(fields: [user_id], references: [user_id])
+}
+
+model RecommendationLog {
+  id             BigInt   @id @default(autoincrement())
+  score          Float
+  recommended_at DateTime @default(now())
+  user_id        Int
+  hotel_id       Int
+  hotel          Hotel    @relation(fields: [hotel_id], references: [hotel_id], onUpdate: NoAction)
+  user           User     @relation(fields: [user_id], references: [user_id], onUpdate: NoAction)
+}
