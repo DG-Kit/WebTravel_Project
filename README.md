@@ -77,9 +77,3 @@ Trọng số có thể điều chỉnh linh hoạt theo yêu cầu hệ thống.
   - Kết hợp dữ liệu thời tiết để tinh chỉnh gợi ý.
 
 ---
-
-README này chỉ mô tả **tổng quan ý tưởng và kiến trúc hệ thống**. Khi dự án phát triển thêm, có thể bổ sung:
-
-- Hướng dẫn cài đặt & chạy dự án.
-- Cấu trúc thư mục mã nguồn.
-- API docs chi tiết cho Backend và AI Service.
