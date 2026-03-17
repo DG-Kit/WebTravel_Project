@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WebTravel - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007ab8",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen">
+<div class="flex min-h-screen w-full flex-col lg:flex-row">
+<div class="relative hidden w-1/2 lg:flex flex-col justify-between p-12 bg-cover bg-center" data-alt="Beautiful sunny aerial view of Amalfi Coast coastline" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA6-Ttxc-laouQj9nQ2gEn5HzSxTpdj9RozOkyWDMzc-zM6ZGkHOVbBJuSzE4JN94LXcr6VAJ-WcsgoDe56u-Hvuh9Btxd4NC3suZBV8yjU2fi0a02sqUh2qSyHJD5b3eg7maCTtfLjDQfGOXps2_ZG9GD_RIp1hjrm6tPQL_a3b1zz8tqi66sT6w0A8y9pl-kBhKihzNpUdB-JbhHyWJLaQVqIa-QTxvOZFI8g2_3-256ZvudcJXjQQ-CNezSQ8mfj2pw0mEOiGCM');">
+<div class="absolute inset-0 bg-primary/20 backdrop-brightness-75"></div>
+<div class="relative z-10 flex items-center gap-3 text-white">
+<div class="size-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center">
+<svg class="size-6" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-2xl font-bold tracking-tight">WebTravel</h2>
+</div>
+<div class="relative z-10 max-w-lg">
+<h1 class="text-5xl font-extrabold text-white leading-tight mb-4">
+                    Your journey <br/>starts with a single click.
+                </h1>
+<p class="text-white/90 text-lg font-medium">
+                    Access exclusive travel deals and personalized itineraries curated just for you.
+                </p>
+</div>
+<div class="relative z-10 flex items-center gap-4">
+<div class="flex -space-x-3">
+<img alt="" class="size-10 rounded-full border-2 border-white" data-alt="User profile avatar 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXCryQHOmitmsP8XyPn0Bxj-0kI3IJj_BM8wp4CTGQKTzSy8pr3sRzauZLCtDWoG1MrPs3emxBJNbr-W6_1LSIhEjfmPmjmAX_b7lvfKhCPFooit5xVxLdPJeNRD567uuiE_9sXd2YZZIdwl_XaoIOQTCJGHwItH5KN4lm4g9v7laggcPDOOUyemZPJAH-yXp6DV985JUjOpTeYRpPE4YsLCyC7Fc9nGnc7D3lkePfIopjb38d2W07O41CRgLKqKbC6d1NJ7HmfmY"/>
+<img alt="" class="size-10 rounded-full border-2 border-white" data-alt="User profile avatar 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6GA3xjbKvZrfcX18nOm7M9N6AOvlXZ980c1azoq9bC1uglVHoM50G79z820ZmU9VLPBo8ngkWykxRQeVENHdWNgfpP9v0M3eyTtQV23teLd9kgakwg7sFdl6yNw27LB8hdd1xfqQReiMALa4Xbn1OiGpdkhr1IGooLmFnM5yxQPKqBVS4xnc5eXJXdKNExWE2Fu_x0zQPEqyR3hQ7vRMejvLOSjNLgfALFsP7xE5K2_FqyIMXlEivmHqKKs6AXbfbsl3gZIeKyRc"/>
+<img alt="" class="size-10 rounded-full border-2 border-white" data-alt="User profile avatar 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvQGw-L50osYoyTNm76uIqJT0qkiKqE4-3yKvTGoFE-PT695ngcEqDcaU8fglQSMPw2Amd-EaBVkSVroeJORAOI2p7kVhemWJslu8Xpx3tP4RGykRy3kAFP3yIIJB4i1hQV6hij4MXC99-bQpTC22prIFF3qS1GB2FT_6QchGD7M_rZmgebKgC9Am5iLkhl0zoaktmkfq4c0m6AIbYH4Y0t-nx-2Y2jwCT0aTgsCCwsNJ10TqseaDDJLk44pd-AhPARxIOe0NVosw"/>
+</div>
+<p class="text-white text-sm font-semibold">Join 10k+ travelers this month</p>
+</div>
+</div>
+<div class="flex flex-1 flex-col justify-center items-center px-6 py-12 lg:px-24 bg-background-light dark:bg-background-dark">
+<div class="w-full max-w-md">
+<div class="lg:hidden mb-12 flex items-center gap-2">
+<span class="text-primary material-symbols-outlined text-4xl">flight_takeoff</span>
+<h2 class="text-slate-900 dark:text-slate-100 text-2xl font-bold">WebTravel</h2>
+</div>
+<div class="mb-10">
+<h2 class="text-3xl font-extrabold text-slate-900 dark:text-slate-100">Welcome Back</h2>
+<p class="mt-2 text-slate-500 dark:text-slate-400">Please enter your details to sign in.</p>
+</div>
+<form class="space-y-6">
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="email">Email Address</label>
+<div class="relative">
+<input class="w-full px-4 py-3.5 rounded-xl border-red-500 focus:ring-red-500 focus:border-red-500 dark:bg-slate-800/50 dark:border-red-500 text-slate-900 dark:text-slate-100 placeholder:text-slate-400" id="email" placeholder="name@example.com" type="email" value="alex.traveler@mail"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-red-500">
+<span class="material-symbols-outlined">warning</span>
+</div>
+</div>
+<p class="mt-1.5 text-xs font-medium text-red-500">Please enter a valid email address.</p>
+</div>
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="password">Password</label>
+<div class="relative">
+<input class="w-full px-4 py-3.5 rounded-xl border-slate-200 focus:ring-primary focus:border-primary dark:bg-slate-800/50 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<input class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary dark:bg-slate-800 dark:border-slate-700" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="ml-2 block text-sm font-medium text-slate-600 dark:text-slate-400" for="remember-me">Remember me</label>
+</div>
+<a class="text-sm font-bold text-primary hover:text-primary/80 transition-colors" href="#">Forgot password?</a>
+</div>
+<button class="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all active:scale-[0.98]" type="submit">
+                        Sign In
+                    </button>
+<div class="relative my-8">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
+</div>
+<div class="relative flex justify-center text-sm">
+<span class="px-2 bg-background-light dark:bg-background-dark text-slate-500">Or continue with</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" type="button">
+<img alt="" class="size-5" data-alt="Google login icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzhW1cBn7AwujWJtlL5a3NwRJEfzwwq8fQiRMxMEeJ25yW5GtN46pBTSTp5hq0CWdygzk7RF_5j1rYWHTbnatcSeqT0oDgh-OgLkt5cq8eCifeOx9t5geNRJdeyNOU8uw5i-bH_7yoRU4SgQIKmLMmtdh57TZBUWMBD3TD1DlwirCvac_4PQbvLd3AAjiezGEZM9vJjc8eTg4qVYN2VAmtfCYHUAwmEmqwLoeDszc3hQ22-_7fGd41kiZHjZVDnxf2NvvsvLmb1mQ"/>
+                            Google
+                        </button>
+<button class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" type="button">
+<img alt="" class="size-5 dark:invert" data-alt="Apple login icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDSHHS3VMsQaexGkEembhef76XKEGDihD2BWGNF4j0mkX9VM7cXufzuCe82UXNNicn9oBw4Trr2siOXQGPV3mCqd4yN5-z4dXNa6n5og8DF2AqmWY7cbHGYNxiODoSHzBM8tsxggjP8VEAWB4y2N8fM7TVgzLkkrVbgHXPgXav0yKaLFciEfKyldPvzM6AtuX_t__iimT5cniNHAJj_JDclQ56CWc8eMWljJ-ti00YD-tlvQOPmZFSlQoGgpbEmzxNclID3bKnB4U"/>
+                            Apple
+                        </button>
+</div>
+</form>
+<p class="mt-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                    Don't have an account? 
+                    <a class="font-bold text-primary hover:text-primary/80 transition-colors" href="#">Sign up for free</a>
+</p>
+</div>
+</div>
+</div>
+</body></html>

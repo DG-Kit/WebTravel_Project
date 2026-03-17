@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WebTravel | Explore Destinations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007ab8",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<!-- Global Header -->
+<header class="sticky top-0 z-50 glass border-b border-slate-200/50 dark:border-slate-800/50 px-6 lg:px-12 py-4">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl font-bold">explore</span>
+<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">WebTravel</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary font-semibold text-sm" href="#">Explore</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Bookings</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Profile</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Settings</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-primary/10 rounded-full transition-colors text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-primary/20 border-2 border-white overflow-hidden shadow-sm">
+<img alt="User" class="w-full h-full object-cover" data-alt="Portrait of a smiling professional man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw2UOjzFI4hAsvIG9LcjgRhIoe61M_JKytEspCzT-mY-6Cf71AGPWORcf4RRXdLGBHPvthzV622xGchHBIZ0x6lObUTS4msdXpmIRlz8v-TQU_0_0RkUnp43iT5xGvIgvIDtgjfz8MLK6oM56nXvhH7bPeIQNSa-mo9jRmLfHYwqoUx7RxPi1e8KOUQGfZff_qNEyrX6Q70znUOWBLCisglYA_MsjFc4W3tHhUh_y6VI0_AVPdsEmqrW7AIin2Ahqe4UhflcFe7tM"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 lg:px-12 py-8">
+<!-- Search Section -->
+<div class="mb-10">
+<div class="glass p-2 rounded-2xl shadow-xl flex flex-col md:flex-row gap-2 max-w-4xl mx-auto">
+<div class="flex-1 flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-slate-900/50 rounded-xl">
+<span class="material-symbols-outlined text-slate-400">location_on</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-sm font-medium placeholder:text-slate-400" placeholder="Search by Country, City, or Hotel" type="text"/>
+</div>
+<button class="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">search</span>
+                    Find Destinations
+                </button>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- Sidebar Filters -->
+<aside class="w-full lg:w-72 space-y-6">
+<div class="glass p-6 rounded-2xl shadow-sm">
+<h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">filter_list</span>
+                        Filters
+                    </h3>
+<!-- Categories -->
+<div class="mb-8">
+<p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Travel Style</p>
+<div class="space-y-2">
+<button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary text-white shadow-md shadow-primary/20">
+<span class="material-symbols-outlined text-xl">landscape</span>
+<span class="text-sm font-medium">Adventure</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-xl">beach_access</span>
+<span class="text-sm font-medium">Relaxing</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-xl">account_balance</span>
+<span class="text-sm font-medium">Cultural</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-xl">diamond</span>
+<span class="text-sm font-medium">Luxury</span>
+</button>
+</div>
+</div>
+<!-- Price Range -->
+<div class="mb-8">
+<p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Price Range (per night)</p>
+<div class="px-2">
+<div class="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full relative">
+<div class="absolute left-1/4 right-1/4 h-full bg-primary rounded-full"></div>
+<div class="absolute left-1/4 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-primary rounded-full cursor-pointer"></div>
+<div class="absolute right-1/4 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-primary rounded-full cursor-pointer"></div>
+</div>
+<div class="flex justify-between mt-4 text-xs font-bold text-slate-600 dark:text-slate-400">
+<span>$100</span>
+<span>$5,000</span>
+</div>
+</div>
+</div>
+<!-- Amenities -->
+<div>
+<p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Amenities</p>
+<div class="space-y-3">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center justify-center">
+<input checked="" class="peer appearance-none w-5 h-5 rounded border-2 border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary transition-all" type="checkbox"/>
+<span class="material-symbols-outlined text-white text-sm absolute opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+</div>
+<span class="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Wi-Fi Included</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center justify-center">
+<input class="peer appearance-none w-5 h-5 rounded border-2 border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary transition-all" type="checkbox"/>
+<span class="material-symbols-outlined text-white text-sm absolute opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+</div>
+<span class="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Swimming Pool</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center justify-center">
+<input class="peer appearance-none w-5 h-5 rounded border-2 border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary transition-all" type="checkbox"/>
+<span class="material-symbols-outlined text-white text-sm absolute opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+</div>
+<span class="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Luxury Spa</span>
+</label>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 space-y-10">
+<!-- Featured Destinations -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Featured Destinations</h2>
+<button class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                            View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="relative group h-64 rounded-3xl overflow-hidden shadow-lg cursor-pointer">
+<img alt="Tokyo" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Bibrant neon cityscape of Tokyo at night" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCd7af9otAGrSTigptgQqini4NleBxHCn2ovPMbTEBilELbrFUCUQtANeNXTxbybIhD1esD8XRl1wx07AwA9k5qbRqcUbnEVXF2aOhR8r19l-wMfDv26F6Up7Pz2LgLez_5Vkv_rAWnZg95axJcnimQU-wUpI3G9Eyz5-pliK1NQz3YgriQhZz7nqpx5IbzcqspI6FUhWnG-4zex5mbXyjeiRerrqZs5V8TYWGVBjM89Ll89qwQqVUtM44kFvwiB_jJgLDo92BcTaY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-6 left-6 text-white">
+<p class="text-xs font-bold uppercase tracking-widest text-primary/80 mb-1">Japan</p>
+<h3 class="text-2xl font-bold">Tokyo Metro</h3>
+<div class="flex items-center gap-4 mt-2">
+<span class="flex items-center gap-1 text-sm"><span class="material-symbols-outlined text-sm">flight</span> From $840</span>
+<span class="flex items-center gap-1 text-sm"><span class="material-symbols-outlined text-sm">schedule</span> 12h Direct</span>
+</div>
+</div>
+</div>
+<div class="relative group h-64 rounded-3xl overflow-hidden shadow-lg cursor-pointer">
+<img alt="Da Nang" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Beautiful aerial view of the Golden Bridge in Da Nang Vietnam" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQO8zvrwgD7G4H3Des1QsFfSZmrF2x2JWhyBx4pfxTiuV2Jwj2Jlz05hOlu81PSXUh-6Y60tGj9b_oA0YragFrO5luMsM6P_F_A9ZXb78JRpP5JTlVm8GwJIzyBFFVi_cxY10JJ_PEOzXNfb_-mO__WON42A0BUHhD1xz617tFjDoct7Ka15ZMHdoCl28xQm2MORWVEERS2XEXcFdI-ZgxAwKrZADOjJlMv6khiYVg-a5XqIiC5f-lplZZAwpYjvFNpkMmmd-BEns"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-6 left-6 text-white">
+<p class="text-xs font-bold uppercase tracking-widest text-primary/80 mb-1">Vietnam</p>
+<h3 class="text-2xl font-bold">Da Nang Coast</h3>
+<div class="flex items-center gap-4 mt-2">
+<span class="flex items-center gap-1 text-sm"><span class="material-symbols-outlined text-sm">flight</span> From $420</span>
+<span class="flex items-center gap-1 text-sm"><span class="material-symbols-outlined text-sm">schedule</span> 6h Direct</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Top Hotels & Resorts -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Top Hotels &amp; Resorts</h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Hotel Card 1 -->
+<div class="glass rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="h-48 relative">
+<img alt="Luxury Resort" class="w-full h-full object-cover" data-alt="Luxury infinity pool overlooking the ocean at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVmmSoS71mLcijNf3sl7JF02FAgpZ7U_Ve3xzlJyi4XDxlpRbi_mMyeaIUKRm0fDyqeYV33gCNhw5nnzcjsF-voE7YbHQqApPfejjzUchcGMwvS4Np-zdMoe402mVtPnytyU1FKELn2V_-3YS-aMHcCPw06WEyMpJzkwdb_Wv4lxvc1fga_G-yDEA-M7U04lxgIe-0Vtbm2r6EHI0to9_RUjnT7jPXkXMnGb7Bt8sB1yW1lrmEEdVuUhTwEkZBRHkxk4C5iNMPVvc"/>
+<div class="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-amber-500 font-bold text-xs shadow-sm">
+<span class="material-symbols-outlined text-xs fill-1">star</span> 5.0
+                                </div>
+</div>
+<div class="p-5">
+<div class="flex items-center gap-1 text-primary text-[10px] font-bold uppercase tracking-tighter mb-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                                    Maldives, Indian Ocean
+                                </div>
+<h4 class="font-bold text-slate-900 dark:text-white mb-3">Azure Bay Sanctuary</h4>
+<div class="flex items-center justify-between mt-4">
+<div class="flex flex-col">
+<span class="text-xs text-slate-400 font-medium">Starting at</span>
+<span class="text-lg font-bold text-primary">$1,250<span class="text-xs text-slate-400 font-normal">/night</span></span>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white p-2 rounded-xl transition-all">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Hotel Card 2 -->
+<div class="glass rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="h-48 relative">
+<img alt="Mountain Lodge" class="w-full h-full object-cover" data-alt="Cozy modern wood cabin in the snowy Alps" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcCP6zumYzimXLyxlvsKhYWrXBm9i08qWfCLnX_wN7cOHNjG837tLmOuI_hZ0dCNr4CBJAba7jT5u0eJrWRT7oWOzsy05QtMxIT2An3AiPpDXuCZ3kIM1NSM6UeU7hazNYMV3B5Wp1hd9OtKD1J2GtWoQ0p7bpSlq_4w68YaSRf5ehjMnRPFJKkaWkDXQjYm82tUBWgsVaXl-26OOZBTmFxvVBZSxliANrsL0RIHqXuowzasPp8hzsTE2cv_xXBgTyj3K8vA-0Usk"/>
+<div class="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-amber-500 font-bold text-xs shadow-sm">
+<span class="material-symbols-outlined text-xs fill-1">star</span> 4.9
+                                </div>
+</div>
+<div class="p-5">
+<div class="flex items-center gap-1 text-primary text-[10px] font-bold uppercase tracking-tighter mb-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                                    Swiss Alps, Switzerland
+                                </div>
+<h4 class="font-bold text-slate-900 dark:text-white mb-3">Summit Peak Lodge</h4>
+<div class="flex items-center justify-between mt-4">
+<div class="flex flex-col">
+<span class="text-xs text-slate-400 font-medium">Starting at</span>
+<span class="text-lg font-bold text-primary">$890<span class="text-xs text-slate-400 font-normal">/night</span></span>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white p-2 rounded-xl transition-all">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Hotel Card 3 -->
+<div class="glass rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="h-48 relative">
+<img alt="Urban Hotel" class="w-full h-full object-cover" data-alt="Modern high-rise hotel lobby with large windows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcfGyFi433YWfrFa8X6BEu5HVcYIlwdyXJ5aowerfUT-nARf65i0SQfW1MeNSMSnoZPn0IaSffpKCY5X7zbzBMdbjFOlObe-UE2kanwL6YIZksI2BDWO4GfuF6vflOiZJClV4CodDfplEE2PE0lJa6N6pMbhjAbjXyKk2OxrHoTNr1YU0O2xuwQTIn0__3tO_cwbsrgQBZz-d9QusPNIR2ndzcPPy_8IhFnllCZubhZAIVBQ6REjzyQzIyANqyLDqVYAOQ8OXlGqE"/>
+<div class="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-amber-500 font-bold text-xs shadow-sm">
+<span class="material-symbols-outlined text-xs fill-1">star</span> 4.8
+                                </div>
+</div>
+<div class="p-5">
+<div class="flex items-center gap-1 text-primary text-[10px] font-bold uppercase tracking-tighter mb-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                                    Dubai, UAE
+                                </div>
+<h4 class="font-bold text-slate-900 dark:text-white mb-3">Oasis Grande Tower</h4>
+<div class="flex items-center justify-between mt-4">
+<div class="flex flex-col">
+<span class="text-xs text-slate-400 font-medium">Starting at</span>
+<span class="text-lg font-bold text-primary">$1,550<span class="text-xs text-slate-400 font-normal">/night</span></span>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white p-2 rounded-xl transition-all">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Popular Attractions -->
+<section class="pb-12">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Popular Attractions</h2>
+</div>
+<div class="flex flex-wrap gap-4">
+<div class="flex items-center gap-3 glass px-5 py-3 rounded-2xl shadow-sm border-slate-200/40 hover:border-primary/40 transition-colors cursor-pointer">
+<div class="size-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined">castle</span>
+</div>
+<div>
+<h5 class="text-sm font-bold">Historical Castles</h5>
+<p class="text-xs text-slate-400">124 Destinations</p>
+</div>
+</div>
+<div class="flex items-center gap-3 glass px-5 py-3 rounded-2xl shadow-sm border-slate-200/40 hover:border-primary/40 transition-colors cursor-pointer">
+<div class="size-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+<span class="material-symbols-outlined">forest</span>
+</div>
+<div>
+<h5 class="text-sm font-bold">Nature Trails</h5>
+<p class="text-xs text-slate-400">350+ Paths</p>
+</div>
+</div>
+<div class="flex items-center gap-3 glass px-5 py-3 rounded-2xl shadow-sm border-slate-200/40 hover:border-primary/40 transition-colors cursor-pointer">
+<div class="size-10 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<h5 class="text-sm font-bold">Culinary Tours</h5>
+<p class="text-xs text-slate-400">80 City Guides</p>
+</div>
+</div>
+<div class="flex items-center gap-3 glass px-5 py-3 rounded-2xl shadow-sm border-slate-200/40 hover:border-primary/40 transition-colors cursor-pointer">
+<div class="size-10 bg-sky-100 dark:bg-sky-900/30 rounded-xl flex items-center justify-center text-sky-600 dark:text-sky-400">
+<span class="material-symbols-outlined">festival</span>
+</div>
+<div>
+<h5 class="text-sm font-bold">Local Festivals</h5>
+<p class="text-xs text-slate-400">Upcoming June</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Map View FAB (Optional UX touch) -->
+<button class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-2xl hover:scale-105 transition-transform z-40">
+<span class="material-symbols-outlined">map</span>
+        Map View
+    </button>
+</body></html>

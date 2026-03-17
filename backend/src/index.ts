@@ -4,6 +4,10 @@ import cors from 'cors';
 
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
+import tagRoutes from './routes/tag.routes';
+import locationRoutes from './routes/location.routes';
+import attractionRoutes from './routes/attraction.routes';
+import hotelRoutes from './routes/hotel.routes';
 import { errorHandler, notFound } from './middlewares/errorHandler';
 
 const app = express();
@@ -24,6 +28,10 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/tags', tagRoutes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/attractions', attractionRoutes);
+app.use('/api/hotels', hotelRoutes);
 
 // ========================
 // Error Handling

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007ab8",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/10 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 md:px-20 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-8 flex items-center justify-center bg-primary rounded-lg text-white">
+<span class="material-symbols-outlined">explore</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">WebTravel</h2>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Explore</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Bookings</a>
+<a class="text-primary text-sm font-semibold" href="#">Profile</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium" href="#">Settings</a>
+</nav>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
+<button class="flex cursor-pointer items-center justify-center rounded-full h-10 w-10 bg-primary/10 text-primary hover:bg-primary/20 transition-all">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="Professional headshot of a smiling young man" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBU68sJWyL1TXBVbOYAfJwcBwmCFSrsJxLHmIxU6HiUS1AedVQi_DXFOEGEe-ELTFwouEExFUn8wyhfzfZNAZIpZyxBU6K3KaHbh_oSJvXMuThSa2MYjVRleHfCOzhd2MTawVgQ5kXQayTTxXwn4hSfRTtX-cB8PJrOIDv7LRrT6AFCsczIagshSzfwarX_xvfgB5_G6p7X6SXpqnHaHX7okqsMqLchgH_LisjXsKw_GsXuSWKpKWS5ANNdRhVbznni-TEx4TGxYP4");'></div>
+</div>
+</header>
+<main class="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Sidebar Overview -->
+<div class="lg:col-span-1 space-y-6">
+<div class="glass-card rounded-xl p-6 shadow-sm flex flex-col items-center text-center">
+<div class="relative group">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-32 ring-4 ring-white shadow-lg" data-alt="User profile photo closeup" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAr8SgaA9ZtgHPWfOJbzsVRe6L5NFQI1eleiunLm2q1qWHTpbIo6fqCCcmpJqJd2K53thHWf-tvJBeLOTBynd3i1l26Cwglaw4X3IRPOgmsmXdGCun1mZoltQmZwOpTiH5xkukGN8x9e2HoAm1vgNUZfR5XlKO_fCEVcwQDfRLSZOHY-b1Nq0qCT5PNfjZnWH12WpWfZRAmpcDhhZqNqNrM_FY15Ihgu1shzb1hxXxOtARg4xGTH2HSqJfgnnIlN84m79wt_suMVPY");'></div>
+<button class="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full shadow-lg hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+</button>
+</div>
+<div class="mt-4">
+<h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">Alex Johnson</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">alex.johnson@example.com</p>
+</div>
+<div class="mt-6 w-full pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-around">
+<div class="text-center">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Trips</p>
+<p class="text-lg font-bold text-primary">12</p>
+</div>
+<div class="text-center">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Saved</p>
+<p class="text-lg font-bold text-primary">48</p>
+</div>
+<div class="text-center">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Member</p>
+<p class="text-lg font-bold text-primary">2y</p>
+</div>
+</div>
+</div>
+<div class="glass-card rounded-xl p-6 shadow-sm">
+<h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Quick Stats</h4>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm">verified_user</span>
+<span class="text-sm text-slate-600 dark:text-slate-400">Verified Explorer</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm">location_on</span>
+<span class="text-sm text-slate-600 dark:text-slate-400">San Francisco, CA</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Form Area -->
+<div class="lg:col-span-2 space-y-8">
+<!-- Profile Form -->
+<section class="glass-card rounded-xl p-8 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Edit Profile</h2>
+<span class="text-xs font-medium text-slate-400">Last updated: 2 days ago</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Full Name</label>
+<input class="form-input rounded-lg border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-background-dark/50 focus:border-primary focus:ring-primary transition-all p-3 text-slate-900 dark:text-slate-100" type="text" value="Alex Johnson"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
+<input class="form-input rounded-lg border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-background-dark/50 focus:border-primary focus:ring-primary transition-all p-3 text-slate-900 dark:text-slate-100" type="email" value="alex.johnson@example.com"/>
+</div>
+<div class="flex flex-col gap-2 md:col-span-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Bio</label>
+<textarea class="form-textarea rounded-lg border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-background-dark/50 focus:border-primary focus:ring-primary transition-all p-3 text-slate-900 dark:text-slate-100" placeholder="Tell us about your travel style..." rows="3"></textarea>
+</div>
+</div>
+</section>
+<!-- Travel Interests Section -->
+<section class="glass-card rounded-xl p-8 shadow-sm">
+<h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Travel Interests</h2>
+<div class="space-y-8">
+<div>
+<h4 class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">Travel Styles</h4>
+<div class="flex flex-wrap gap-3">
+<button class="px-4 py-2 rounded-full bg-primary text-white text-sm font-medium flex items-center gap-2 transition-all hover:brightness-110">
+<span class="material-symbols-outlined text-sm">hiking</span> Adventure
+                                    </button>
+<button class="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium flex items-center gap-2 border border-transparent hover:border-primary/30 transition-all">
+<span class="material-symbols-outlined text-sm">spa</span> Relaxing
+                                    </button>
+<button class="px-4 py-2 rounded-full bg-primary text-white text-sm font-medium flex items-center gap-2 transition-all hover:brightness-110">
+<span class="material-symbols-outlined text-sm">museum</span> Cultural
+                                    </button>
+<button class="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium flex items-center gap-2 border border-transparent hover:border-primary/30 transition-all">
+<span class="material-symbols-outlined text-sm">payments</span> Budget
+                                    </button>
+<button class="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium flex items-center gap-2 border border-transparent hover:border-primary/30 transition-all">
+<span class="material-symbols-outlined text-sm">diamond</span> Luxury
+                                    </button>
+</div>
+</div>
+<div>
+<h4 class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">Preferred Seasons</h4>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<label class="relative flex flex-col items-center p-4 rounded-xl border-2 border-primary bg-primary/5 cursor-pointer">
+<span class="material-symbols-outlined text-primary mb-2">sunny</span>
+<span class="text-sm font-bold text-primary">Summer</span>
+<div class="absolute top-2 right-2 h-4 w-4 bg-primary rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-white">check</span>
+</div>
+</label>
+<label class="relative flex flex-col items-center p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white/30 dark:bg-slate-900/30 cursor-pointer hover:border-primary/20 transition-all">
+<span class="material-symbols-outlined text-slate-400 mb-2">ac_unit</span>
+<span class="text-sm font-bold text-slate-600 dark:text-slate-400">Winter</span>
+</label>
+<label class="relative flex flex-col items-center p-4 rounded-xl border-2 border-primary bg-primary/5 cursor-pointer">
+<span class="material-symbols-outlined text-primary mb-2">eco</span>
+<span class="text-sm font-bold text-primary">Spring</span>
+<div class="absolute top-2 right-2 h-4 w-4 bg-primary rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-white">check</span>
+</div>
+</label>
+<label class="relative flex flex-col items-center p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white/30 dark:bg-slate-900/30 cursor-pointer hover:border-primary/20 transition-all">
+<span class="material-symbols-outlined text-slate-400 mb-2">eco</span>
+<span class="text-sm font-bold text-slate-600 dark:text-slate-400">Autumn</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<div class="flex justify-end gap-4">
+<button class="px-6 py-3 rounded-lg text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">Cancel</button>
+<button class="px-8 py-3 rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:translate-y-[-2px] active:translate-y-[0px] transition-all">Save Changes</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Success Toast Notification -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-bounce-subtle">
+<div class="flex items-center gap-3 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl border border-white/10 backdrop-blur-md">
+<div class="bg-green-500 rounded-full p-1 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[16px]">check</span>
+</div>
+<p class="text-sm font-medium">Profile updated successfully!</p>
+<button class="ml-4 text-slate-400 hover:text-white">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007ab8",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center font-display">
+<div class="flex h-screen w-full overflow-hidden">
+<div class="hidden lg:block lg:w-1/2 relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Stunning tropical beach with turquoise water and white sand" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuChILPH1RrURXy6Y3wUYDho6lCmlyvGbYDmth-LZD9TgwH2AOaIV_MNkzU3-SCvO7bB-byR7qUGmKoSAeoo_s8BOZKJ_7nttOXhNkSEQaRDn3M7B9uKaNrSvCmXrrxlluD6nBJz1hNwZEeSg4qpORwB8tTSyjjAkFN--paKchspfE8mj2g-kCKQYJ39e7cHh7MAXtYN4qNahug3KU40po5xlJu4jJ3piB8Q8VmXtvHUnvpZ9FYFHpW5jttnaSupA6pJ2MxVXgGe0J8');">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
+</div>
+<div class="absolute bottom-12 left-12 right-12 text-white">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-4xl">travel_explore</span>
+<span class="text-2xl font-bold tracking-tight">WebTravel</span>
+</div>
+<h1 class="text-5xl font-extrabold leading-tight mb-4">Discover the world's most hidden gems.</h1>
+<p class="text-lg text-slate-100 max-w-md">Join over 2 million travelers exploring 150+ countries with personalized itineraries and local insights.</p>
+</div>
+</div>
+<div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background-light dark:bg-background-dark relative overflow-y-auto">
+<div class="absolute top-8 right-8 lg:hidden">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined">travel_explore</span>
+<span class="text-xl font-bold tracking-tight">WebTravel</span>
+</div>
+</div>
+<div class="w-full max-w-md">
+<div class="glass-effect p-8 rounded-xl shadow-2xl border border-primary/10">
+<div class="mb-8">
+<h2 class="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">Create Account</h2>
+<p class="text-slate-500 dark:text-slate-400">Start your journey with us today.</p>
+</div>
+<form class="space-y-5">
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Full Name</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">person</span>
+<input class="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900" placeholder="John Doe" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Email Address</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">mail</span>
+<input class="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900" placeholder="john@example.com" type="email"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Password</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">lock</span>
+<input class="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Confirm</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">lock_reset</span>
+<input class="w-full pl-12 pr-4 py-3.5 bg-white/50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900" placeholder="••••••••" type="password"/>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 py-2">
+<input class="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary/30" id="terms" type="checkbox"/>
+<label class="text-xs text-slate-600 dark:text-slate-400" for="terms">I agree to the <a class="text-primary hover:underline" href="#">Terms of Service</a> and <a class="text-primary hover:underline" href="#">Privacy Policy</a></label>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-lg shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 group" type="submit">
+<span>Create Account</span>
+<span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</form>
+<div class="mt-8 text-center">
+<p class="text-slate-600 dark:text-slate-400 text-sm">
+                            Already have an account? 
+                            <a class="text-primary font-bold hover:underline ml-1" href="#">Sign in</a>
+</p>
+</div>
+<div class="mt-8 pt-8 border-t border-slate-200/50 flex flex-col gap-4">
+<button class="w-full flex items-center justify-center gap-3 py-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-slate-700 font-medium">
+<img alt="Google Logo" class="w-5 h-5" data-alt="Google colorful logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDALBwxXokK5UZw2CLE4jEL65HIB7S3pZHZB5FwCL3i-yf_LMK9NN_OG1jrE_S-FGqzIv_HPrwGx-pLzW3r5gl45pBiw-ZVXjHa11_mOpQ_c69OBdAv5HjN4tXplvvn6DSH3fVoQ0Fcvk1PGCf6vF_Ac7IvkBAU3s2-WWDugcrbRWEkrJKviLjAqNJhtPC95QSrwVBJf0RIh9Hb57lYvFU5Hn3z1mluSaFaSeXdfz1arBwIW33tCbbl-QzHgPxBXzjRL7DyqvVlP2g"/>
+<span>Continue with Google</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
