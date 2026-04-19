@@ -205,6 +205,12 @@ export default function HotelDetailsPage() {
     ? Math.min(...hotel.rooms.map((r) => Number(r.price)))
     : null;
 
+  const checkInDate = new Date(bookingState.checkIn);
+  const checkOutDate = new Date(bookingState.checkOut);
+  const nights = (bookingState.checkIn && bookingState.checkOut && checkOutDate > checkInDate)
+    ? Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 3600 * 24))
+    : 0;
+
   return (
     <div className="bg-background-light font-display text-slate-900 antialiased min-h-screen">
       {/* === Stitch Header: Hotel Details & Booking === */}
@@ -346,8 +352,12 @@ export default function HotelDetailsPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-black text-primary">${Number(room.price).toFixed(0)}</p>
-                          <p className="text-xs text-slate-400 font-medium">per night</p>
+                          <p className="text-2xl font-black text-primary">
+                            ${nights > 0 ? (Number(room.price) * nights).toFixed(0) : Number(room.price).toFixed(0)}
+                          </p>
+                          <p className="text-xs text-slate-400 font-medium">
+                            {nights > 0 ? `for ${nights} night${nights > 1 ? 's' : ''}` : 'per night'}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200/50">
@@ -457,10 +467,14 @@ export default function HotelDetailsPage() {
             <div className="sticky top-24 glass-card rounded-2xl p-6 border border-slate-200/50 shadow-xl space-y-6">
               <div className="flex justify-between items-end">
                 <div>
-                  <span className="text-sm font-semibold text-slate-500">Starting from</span>
+                  <span className="text-sm font-semibold text-slate-500">
+                    {nights > 0 ? 'Total estimated from' : 'Starting from'}
+                  </span>
                   <h4 className="text-3xl font-black text-slate-900 leading-none mt-1">
-                    {minPrice ? `$${minPrice}` : '--'}
-                    <span className="text-sm font-medium text-slate-500">/night</span>
+                    {minPrice ? (nights > 0 ? `$${minPrice * nights}` : `$${minPrice}`) : '--'}
+                    <span className="text-sm font-medium text-slate-500">
+                      {nights > 0 ? ` / ${nights} night${nights > 1 ? 's' : ''}` : '/night'}
+                    </span>
                   </h4>
                 </div>
                 <div className="flex gap-0.5 text-amber-400 text-sm">
