@@ -25,7 +25,7 @@ export default function LoginPage() {
         router.push('/profile');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'ÄÄƒng nháº­p tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i sau.');
+      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }

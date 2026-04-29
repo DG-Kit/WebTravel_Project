@@ -50,14 +50,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (response.data.success) {
             setUser(response.data.data);
           } else {
-            handleLogout();
+            console.warn('Xác thực thất bại:', response.data.message);
+            handleLogout(false); // clear auth but do not redirect
           }
         } catch (error: any) {
           // Chỉ log lỗi ra console nếu không phải lỗi 401 (Hết hạn token)
           if (error.response?.status !== 401) {
             console.error('Lỗi xác thực token:', error);
           }
-          handleLogout();
+          handleLogout(false); // clear auth but do not redirect
         }
       }
       setIsLoading(false);
@@ -72,11 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('token', newToken);
   };
 
-  const handleLogout = () => {
+  const handleLogout = (redirect = true) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
-    router.push('/login');
+    if (redirect) {
+      router.push('/login');
+    }
   };
 
   const updateUser = (userData: Partial<User>) => {

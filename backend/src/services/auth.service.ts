@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import crypto from 'crypto';
 import prisma from '../config/prisma';
 
 // --- Validation Schemas ---
@@ -66,6 +67,29 @@ export const loginUser = async (data: z.infer<typeof loginSchema>) => {
   }
 
   const token = generateToken(user.user_id, user.role);
-  const { password_hash, ...safeUser } = user;
-  return { user: safeUser, token };
+  
+  // Standardize return fields
+  const safeUser = {
+    user_id: user.user_id,
+    email: user.email,
+    full_name: user.full_name,
+    phone: user.phone,
+    role: user.role,
+  };
+
+  // Generate and save refresh token
+  const refreshToken = crypto.randomBytes(40).toString('hex');
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+
+  await prisma.authToken.create({
+    data: {
+      user_id: user.user_id,
+      access_token: token,
+      refresh_token: refreshToken,
+      expires_at: expiresAt,
+    }
+  });
+
+  return { user: safeUser, token, refresh_token: refreshToken };
 };
