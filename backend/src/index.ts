@@ -8,6 +8,7 @@ import tagRoutes from './routes/tag.routes';
 import locationRoutes from './routes/location.routes';
 import attractionRoutes from './routes/attraction.routes';
 import hotelRoutes from './routes/hotel.routes';
+import bookingRoutes from './routes/booking.routes';
 import { errorHandler, notFound } from './middlewares/errorHandler';
 
 const app = express();
@@ -18,6 +19,23 @@ const port = process.env.PORT || 8080;
 // ========================
 app.use(cors());
 app.use(express.json());
+
+// Global JSON serializer: BigInt → string, Prisma Decimal → number, Date → ISO string
+app.set('json replacer', (_key: string, value: any) => {
+  if (typeof value === 'bigint') return value.toString();
+  // Prisma Decimal: duck-typed by .toFixed() + .toNumber() (constructor may be minified)
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    !(value instanceof Date) &&
+    !Array.isArray(value) &&
+    typeof value.toFixed === 'function' &&
+    typeof value.toNumber === 'function'
+  ) {
+    return value.toNumber();
+  }
+  return value;
+});
 
 // ========================
 // Routes
@@ -32,6 +50,7 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/attractions', attractionRoutes);
 app.use('/api/hotels', hotelRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // ========================
 // Error Handling
@@ -42,3 +61,4 @@ app.use(errorHandler);
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
+

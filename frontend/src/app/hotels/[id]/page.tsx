@@ -98,6 +98,7 @@ export default function HotelDetailsPage() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [bookingState, setBookingState] = useState({ checkIn: '', checkOut: '', guests: 2 });
+  const [isBooking, setIsBooking] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -169,6 +170,38 @@ export default function HotelDetailsPage() {
     } catch (err: any) {
       setReviewError(err.response?.data?.message || 'Failed to submit review');
     } finally { setSubmittingReview(false); }
+  };
+
+  const handleBookRoom = async (roomId: number) => {
+    if (!user) { router.push('/login'); return; }
+    if (!bookingState.checkIn || !bookingState.checkOut) {
+      alert('Please select Check-in and Check-out dates first.');
+      return;
+    }
+    const checkInDate = new Date(bookingState.checkIn);
+    const checkOutDate = new Date(bookingState.checkOut);
+    if (checkOutDate <= checkInDate) {
+      alert('Check-out date must be after Check-in date.');
+      return;
+    }
+
+    setIsBooking(roomId);
+    try {
+      const res = await api.post('/bookings', {
+        hotel_id: Number(id),
+        check_in: bookingState.checkIn,
+        check_out: bookingState.checkOut,
+        guests: bookingState.guests,
+        rooms: [{ room_id: roomId, quantity: 1 }]
+      });
+      if (res.data.success) {
+        router.push(`/checkout/${res.data.data.booking_id}`);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to create booking');
+    } finally {
+      setIsBooking(null);
+    }
   };
 
   if (loading) {
@@ -369,11 +402,12 @@ export default function HotelDetailsPage() {
                           )}
                         </ul>
                         <button
-                          disabled={!room.is_available}
+                          onClick={() => handleBookRoom(room.room_id)}
+                          disabled={!room.is_available || isBooking === room.room_id}
                           title={room.is_available ? 'Select this room for booking' : 'Not available'}
-                          className={`px-6 py-2.5 rounded-xl font-bold transition-all active:scale-95 shadow-md ${room.is_available ? 'bg-primary hover:bg-primary/90 text-white shadow-primary/30' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                          className={`px-6 py-2.5 rounded-xl font-bold transition-all active:scale-95 shadow-md ${room.is_available ? 'bg-primary hover:bg-primary/90 text-white shadow-primary/30' : 'bg-slate-200 text-slate-400 cursor-not-allowed'} flex items-center justify-center`}
                         >
-                          Select Room
+                          {isBooking === room.room_id ? <span className="material-symbols-outlined animate-spin text-sm">sync</span> : 'Select Room'}
                         </button>
                       </div>
                     </div>
@@ -508,7 +542,12 @@ export default function HotelDetailsPage() {
                 className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl font-bold text-base transition-all shadow-lg shadow-primary/30 active:scale-95"
                 onClick={() => {
                   if (!user) { router.push('/login'); return; }
-                  alert('Booking feature coming in Phase 3!');
+                  if (!bookingState.checkIn || !bookingState.checkOut) {
+                    alert('Please select Check-in and Check-out dates first.');
+                    return;
+                  }
+                  alert('Please select a specific room from the "Choose Your Room" section below to proceed.');
+                  window.scrollTo({ top: document.body.scrollHeight / 2, behavior: 'smooth' });
                 }}
               >
                 Check Availability

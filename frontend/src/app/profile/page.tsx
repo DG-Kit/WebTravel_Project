@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import api from '@/lib/api';
+import MyBookings from './MyBookings';
 
 const TRAVEL_STYLES = [
   { id: 'Adventure', icon: 'hiking', label: 'Adventure' },
@@ -33,6 +34,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'profile' | 'bookings'>('profile');
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/login');
@@ -141,8 +143,24 @@ export default function ProfilePage() {
 
             {/* Main Form Area */}
             <div className="lg:col-span-2 space-y-8">
-              {error && <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm font-medium">{error}</div>}
-              <section className="glass-card rounded-xl p-8 shadow-sm">
+              {/* Tabs Navbar */}
+              <div className="flex border-b border-slate-200">
+                <button 
+                  onClick={() => setActiveTab('profile')} 
+                  className={`pb-4 px-6 font-bold text-sm transition-colors ${activeTab === 'profile' ? 'border-b-2 border-primary text-primary' : 'text-slate-500 hover:text-slate-800'}`}>
+                  Edit Profile
+                </button>
+                <button 
+                  onClick={() => setActiveTab('bookings')} 
+                  className={`pb-4 px-6 font-bold text-sm transition-colors ${activeTab === 'bookings' ? 'border-b-2 border-primary text-primary' : 'text-slate-500 hover:text-slate-800'}`}>
+                  My Bookings
+                </button>
+              </div>
+
+              {activeTab === 'profile' ? (
+                <>
+                  {error && <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm font-medium">{error}</div>}
+                  <section className="glass-card rounded-xl p-8 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-slate-900 ">Edit Profile</h2>
                 </div>
@@ -205,6 +223,10 @@ export default function ProfilePage() {
                   {isSaving ? <><span className="material-symbols-outlined animate-spin text-sm">sync</span> Saving...</> : 'Save Changes'}
                 </button>
               </div>
+              </>
+              ) : (
+                <MyBookings />
+              )}
             </div>
           </div>
         </main>

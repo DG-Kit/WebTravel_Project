@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import api from '../lib/api';
@@ -52,8 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             handleLogout();
           }
-        } catch (error) {
-          console.error('Lỗi xác thực token:', error);
+        } catch (error: any) {
+          // Chỉ log lỗi ra console nếu không phải lỗi 401 (Hết hạn token)
+          if (error.response?.status !== 401) {
+            console.error('Lỗi xác thực token:', error);
+          }
           handleLogout();
         }
       }
