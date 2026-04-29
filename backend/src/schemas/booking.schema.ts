@@ -15,5 +15,6 @@ export const createBookingSchema = z.object({
   }),
   guests: z.number().int().positive(),
   rooms: z.array(bookingDetailSchema).min(1, "At least one room must be booked"),
-  coupon_id: z.number().int().positive().optional(),
+  // coupon_code: user enters coupon string (e.g. "SUMMER20"), not numeric ID
+  coupon_code: z.string().optional(),
 });

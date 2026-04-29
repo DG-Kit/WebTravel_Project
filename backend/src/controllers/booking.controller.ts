@@ -39,7 +39,8 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
       validatedData.check_in,
       validatedData.check_out,
       validatedData.guests,
-      validatedData.rooms
+      validatedData.rooms,
+      validatedData.coupon_code  // new: optional coupon code string
     );
 
     res.status(201).json({ success: true, data: serializeBigInt(booking) });
@@ -48,8 +49,12 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
        res.status(400).json({ success: false, message: 'Validation error', errors: error.issues });
        return;
     }
-    // Return 400 for business logic errors like Sold Out
-    if (error.message.includes('sold out') || error.message.includes('Check-out')) {
+    // Business logic errors → 400
+    const businessErrors = [
+      'sold out', 'Check-out', 'does not belong to hotel',
+      'guests', 'capacity', 'Coupon', 'coupon', 'invalid', 'expired', 'usage limit'
+    ];
+    if (businessErrors.some(kw => error.message.includes(kw))) {
        res.status(400).json({ success: false, message: error.message });
        return;
     }
@@ -122,6 +127,35 @@ export const payBooking = async (req: Request, res: Response, next: NextFunction
     if (error.message === 'Booking not found') {
        res.status(404).json({ success: false, message: error.message });
        return;
+    }
+    next(error);
+  }
+};
+
+export const validateCoupon = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { coupon_code, booking_id } = req.body;
+    if (!coupon_code) {
+      res.status(400).json({ success: false, message: 'coupon_code is required' });
+      return;
+    }
+
+    // @ts-ignore
+    const userId = req.user.user_id;
+
+    // Fetch booking to get total_price for discount calculation
+    const booking = await bookingService.getBookingById(booking_id, userId);
+    const bookingTotal = typeof booking.total_price === 'number'
+      ? booking.total_price
+      : parseFloat(booking.total_price.toString());
+
+    const result = await bookingService.previewCoupon(coupon_code, bookingTotal);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    const clientErrors = ['invalid', 'expired', 'usage limit', 'active', 'Coupon'];
+    if (clientErrors.some(kw => error.message.includes(kw))) {
+      res.status(400).json({ success: false, message: error.message });
+      return;
     }
     next(error);
   }

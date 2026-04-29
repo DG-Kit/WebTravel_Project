@@ -10,6 +10,7 @@ router.use(authenticate);
 // User Booking Endpoints
 router.post('/', bookingController.createBooking);
 router.get('/my-bookings', bookingController.getMyBookings);
+router.post('/validate-coupon', bookingController.validateCoupon);
 router.get('/:id', bookingController.getBookingDetails);
 
 // Manage Booking Endpoints

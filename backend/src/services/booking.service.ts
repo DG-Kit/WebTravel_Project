@@ -86,7 +86,8 @@ export const createBooking = async (
   checkInStr: string,
   checkOutStr: string,
   guests: number,
-  roomsReq: { room_id: number; quantity: number }[]
+  roomsReq: { room_id: number; quantity: number }[],
+  couponCode?: string
 ) => {
   const checkIn = new Date(checkInStr);
   const checkOut = new Date(checkOutStr);
@@ -94,22 +95,30 @@ export const createBooking = async (
   const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 3600 * 24));
   if (nights <= 0) throw new Error('Check-out must be after Check-in');
 
-  let total_price = 0;
+  let base_price = 0;
   const bookingDetailsToCreate: any[] = [];
+  let totalCapacity = 0;
 
   for (const req of roomsReq) {
-    // 1. Check availability
+    // 1. Validate room belongs to the correct hotel
+    const room = await prisma.room.findUnique({ where: { room_id: req.room_id } });
+    if (!room) throw new Error(`Room ${req.room_id} not found`);
+    if (room.hotel_id !== hotelId) {
+      throw new Error(`Room ${req.room_id} does not belong to hotel ${hotelId}`);
+    }
+
+    // 2. Check availability
     const isAvail = await checkAvailability(req.room_id, checkIn, checkOut, req.quantity);
     if (!isAvail) {
       throw new Error(`Room ${req.room_id} is sold out or does not have enough quantity for the selected dates`);
     }
 
-    // 2. Get price
-    const room = await prisma.room.findUnique({ where: { room_id: req.room_id } });
-    if (!room) throw new Error(`Room ${req.room_id} not found`);
+    // 3. Accumulate capacity
+    totalCapacity += room.capacity * req.quantity;
 
+    // 4. Calculate price
     const roomPriceForStay = Number(room.price) * req.quantity * nights;
-    total_price += roomPriceForStay;
+    base_price += roomPriceForStay;
 
     bookingDetailsToCreate.push({
       room_id: room.room_id,
@@ -118,7 +127,51 @@ export const createBooking = async (
     });
   }
 
-  // 3. Create Booking, Details, and Payment via Transaction
+  // 5. Validate guests vs total capacity
+  if (guests > totalCapacity) {
+    throw new Error(
+      `Number of guests (${guests}) exceeds total room capacity (${totalCapacity}). Please select more rooms or fewer guests.`
+    );
+  }
+
+  // 6. Validate and apply coupon if provided
+  let discount_amount = 0;
+  let appliedCoupon: any = null;
+
+  if (couponCode) {
+    const coupon = await prisma.coupon.findUnique({
+      where: { code: couponCode.trim().toUpperCase() }
+    });
+
+    if (!coupon) throw new Error(`Coupon code "${couponCode}" is invalid or does not exist`);
+    if (!coupon.is_active) throw new Error(`Coupon "${couponCode}" is no longer active`);
+    if (new Date() > coupon.expiry_date) throw new Error(`Coupon "${couponCode}" has expired`);
+
+    // Check usage limit: count how many bookings have used this coupon
+    const usageCount = await prisma.bookingCoupon.count({
+      where: { coupon_id: coupon.coupon_id }
+    });
+    if (usageCount >= coupon.usage_limit) {
+      throw new Error(`Coupon "${couponCode}" has reached its usage limit`);
+    }
+
+    // Calculate discount
+    if (coupon.discount_type === 'PERCENTAGE') {
+      discount_amount = (base_price * Number(coupon.discount_value)) / 100;
+      // Apply max_discount cap
+      if (Number(coupon.max_discount) > 0) {
+        discount_amount = Math.min(discount_amount, Number(coupon.max_discount));
+      }
+    } else if (coupon.discount_type === 'FIXED') {
+      discount_amount = Math.min(Number(coupon.discount_value), base_price);
+    }
+
+    appliedCoupon = coupon;
+  }
+
+  const total_price = Math.max(0, base_price - discount_amount);
+
+  // 7. Create Booking, Details, Payment (and BookingCoupon if applicable) via Transaction
   const newBooking = await prisma.$transaction(async (tx) => {
     const booking = await tx.booking.create({
       data: {
@@ -147,10 +200,26 @@ export const createBooking = async (
       }
     });
 
+    // Record coupon usage
+    if (appliedCoupon) {
+      await tx.bookingCoupon.create({
+        data: {
+          booking_id: booking.booking_id,
+          coupon_id: appliedCoupon.coupon_id,
+          discount_amount
+        }
+      });
+    }
+
     return booking;
   });
 
-  return newBooking;
+  return {
+    ...newBooking,
+    base_price,
+    discount_amount,
+    coupon_applied: appliedCoupon ? appliedCoupon.code : null
+  };
 };
 
 export const getMyBookings = async (userId: number) => {
@@ -165,7 +234,10 @@ export const getMyBookings = async (userId: number) => {
           room: { select: { room_type: true } }
         }
       },
-      payment: true
+      payment: true,
+      coupons: {
+        select: { discount_amount: true, coupon: { select: { code: true } } }
+      }
     },
     orderBy: { created_at: 'desc' }
   });
@@ -182,7 +254,10 @@ export const getBookingById = async (bookingIdStr: string, userId: number) => {
       details: {
         include: { room: true }
       },
-      payment: true
+      payment: true,
+      coupons: {
+        select: { discount_amount: true, coupon: { select: { code: true } } }
+      }
     }
   });
 
@@ -247,4 +322,41 @@ export const simulatePayment = async (bookingIdStr: string, userId: number) => {
   });
 
   return updated;
+};
+
+/**
+ * Preview coupon discount without modifying any booking.
+ * Used by the frontend "Apply" button before final payment.
+ */
+export const previewCoupon = async (couponCode: string, baseAmount: number) => {
+  const coupon = await prisma.coupon.findUnique({
+    where: { code: couponCode.trim().toUpperCase() }
+  });
+
+  if (!coupon) throw new Error(`Coupon code "${couponCode}" is invalid or does not exist`);
+  if (!coupon.is_active) throw new Error(`Coupon "${couponCode}" is no longer active`);
+  if (new Date() > coupon.expiry_date) throw new Error(`Coupon "${couponCode}" has expired`);
+
+  const usageCount = await prisma.bookingCoupon.count({ where: { coupon_id: coupon.coupon_id } });
+  if (usageCount >= coupon.usage_limit) {
+    throw new Error(`Coupon "${couponCode}" has reached its usage limit`);
+  }
+
+  let discount_amount = 0;
+  if (coupon.discount_type === 'PERCENTAGE') {
+    discount_amount = (baseAmount * Number(coupon.discount_value)) / 100;
+    if (Number(coupon.max_discount) > 0) {
+      discount_amount = Math.min(discount_amount, Number(coupon.max_discount));
+    }
+  } else if (coupon.discount_type === 'FIXED') {
+    discount_amount = Math.min(Number(coupon.discount_value), baseAmount);
+  }
+
+  return {
+    code: coupon.code,
+    discount_type: coupon.discount_type,
+    discount_value: Number(coupon.discount_value),
+    discount_amount: Math.round(discount_amount * 100) / 100,
+    final_amount: Math.max(0, baseAmount - discount_amount)
+  };
 };
