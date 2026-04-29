@@ -360,3 +360,69 @@ export const previewCoupon = async (couponCode: string, baseAmount: number) => {
     final_amount: Math.max(0, baseAmount - discount_amount)
   };
 };
+
+/**
+ * Apply coupon to an existing booking (PENDING_PAYMENT only).
+ * This updates booking.total_price + payment.amount and records BookingCoupon.
+ */
+export const applyCouponToBooking = async (
+  bookingIdStr: string,
+  userId: number,
+  couponCode: string
+) => {
+  const bookingId = BigInt(bookingIdStr);
+  const booking = await getBookingById(bookingIdStr, userId);
+
+  if (booking.booking_status !== 'PENDING_PAYMENT') {
+    throw new Error('Booking does not await payment');
+  }
+  if (booking.coupons && booking.coupons.length > 0) {
+    throw new Error('A coupon has already been applied to this booking');
+  }
+
+  // Recompute base amount from booking details for correctness
+  const checkIn = new Date(booking.check_in as any);
+  const checkOut = new Date(booking.check_out as any);
+  const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 3600 * 24));
+  if (nights <= 0) throw new Error('Check-out must be after Check-in');
+
+  const baseAmount = (booking.details || []).reduce((sum: number, d: any) => {
+    const price = Number(d.price_at_booking);
+    const qty = Number(d.quantity || 1);
+    return sum + price * qty * nights;
+  }, 0);
+
+  const preview = await previewCoupon(couponCode, baseAmount);
+
+  const discount_amount = preview.discount_amount;
+  const final_amount = preview.final_amount;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.booking.update({
+      where: { booking_id: bookingId },
+      data: { total_price: final_amount }
+    });
+
+    await tx.payment.update({
+      where: { booking_id: bookingId },
+      data: { amount: final_amount }
+    });
+
+    const coupon = await tx.coupon.findUnique({
+      where: { code: couponCode.trim().toUpperCase() }
+    });
+    if (!coupon) {
+      throw new Error(`Coupon code "${couponCode}" is invalid or does not exist`);
+    }
+
+    await tx.bookingCoupon.create({
+      data: {
+        booking_id: bookingId,
+        coupon_id: coupon.coupon_id,
+        discount_amount
+      }
+    });
+  });
+
+  return preview;
+};

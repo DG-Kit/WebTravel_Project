@@ -143,13 +143,8 @@ export const validateCoupon = async (req: Request, res: Response, next: NextFunc
     // @ts-ignore
     const userId = req.user.user_id;
 
-    // Fetch booking to get total_price for discount calculation
-    const booking = await bookingService.getBookingById(booking_id, userId);
-    const bookingTotal = typeof booking.total_price === 'number'
-      ? booking.total_price
-      : parseFloat(booking.total_price.toString());
-
-    const result = await bookingService.previewCoupon(coupon_code, bookingTotal);
+    // Apply coupon to booking so frontend totals & payment are consistent
+    const result = await bookingService.applyCouponToBooking(booking_id, userId, coupon_code);
     res.json({ success: true, data: result });
   } catch (error: any) {
     const clientErrors = ['invalid', 'expired', 'usage limit', 'active', 'Coupon'];

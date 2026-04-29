@@ -22,32 +22,34 @@ export default function CheckoutPage() {
   const [couponMsg, setCouponMsg] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
 
-  useEffect(() => {
-    const fetchBooking = async () => {
-      try {
-        const res = await api.get(`/bookings/${id}`);
-        if (res.data.success) {
-          setBooking(res.data.data);
-          // Hydrate coupon if already applied (e.g. from a previous session)
-          const existingCoupon = res.data.data.coupons?.[0];
-          if (existingCoupon) {
-            setAppliedCoupon({
-              code: existingCoupon.coupon?.code ?? '',
-              discount: parseFloat(String(existingCoupon.discount_amount ?? 0))
-            });
-            setCouponStatus('applied');
-          }
+  const fetchBooking = async () => {
+    try {
+      const res = await api.get(`/bookings/${id}`);
+      if (res.data.success) {
+        setBooking(res.data.data);
+        // Hydrate coupon if already applied
+        const existingCoupon = res.data.data.coupons?.[0];
+        if (existingCoupon) {
+          setAppliedCoupon({
+            code: existingCoupon.coupon?.code ?? '',
+            discount: parseFloat(String(existingCoupon.discount_amount ?? 0))
+          });
+          setCouponStatus('applied');
         }
-      } catch (err) {
-        console.error('Failed to fetch booking', err);
-        alert('Booking not found or access denied');
-        router.push('/');
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (err) {
+      console.error('Failed to fetch booking', err);
+      alert('Booking not found or access denied');
+      router.push('/');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (id) fetchBooking();
-  }, [id, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
@@ -63,6 +65,8 @@ export default function CheckoutPage() {
         setAppliedCoupon({ code: res.data.data.code, discount: res.data.data.discount_amount });
         setCouponStatus('applied');
         setCouponMsg(`Coupon applied! You save $${res.data.data.discount_amount.toLocaleString()}`);
+        // Re-fetch booking so total_price/payment reflect applied coupon
+        await fetchBooking();
       }
     } catch (err: any) {
       setCouponStatus('error');
@@ -104,16 +108,24 @@ export default function CheckoutPage() {
     ? Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 3600 * 24))
     : 0;
   const hotel = booking.hotel;
-  const total = typeof booking.total_price === 'number'
-    ? booking.total_price
-    : parseFloat(String(booking.total_price ?? 0));
+  // booking.total_price is stored on backend, but UI computes totals (incl. taxes) from details for consistency.
 
   // Price breakdown: backend already stored discounted total_price
   // We display base = total / 0.9 * 0.9 approach is wrong — use actual data
+  const subtotal = (booking.details || []).reduce((sum: number, d: any) => {
+    const price = typeof d.price_at_booking === 'number'
+      ? d.price_at_booking
+      : parseFloat(String(d.price_at_booking ?? 0));
+    const qty = typeof d.quantity === 'number' ? d.quantity : parseInt(String(d.quantity ?? 1), 10);
+    return sum + price * qty * nights;
+  }, 0);
+
   const discountAmount = appliedCoupon?.discount ?? 0;
-  const subtotal = total + discountAmount;  // undiscounted base
-  const tax = total * 0.1;
-  const basePrice = total - tax;
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+  const tax = discountedSubtotal * 0.1;
+  const total = discountedSubtotal + tax;
+
+  const toMoney = (n: number) => Math.round(n * 100) / 100;
 
   return (
     <div className="bg-slate-50 min-h-screen pb-12 font-sans text-slate-900">
@@ -313,7 +325,7 @@ export default function CheckoutPage() {
                   <h4 className="font-bold text-slate-900 mb-1">Price Details</h4>
                   <div className="flex justify-between text-sm text-slate-600">
                     <span>{hotel.name} × {nights} nights</span>
-                    <span>${subtotal.toLocaleString()}</span>
+                    <span>${toMoney(subtotal).toLocaleString()}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600 font-medium">
@@ -321,18 +333,18 @@ export default function CheckoutPage() {
                         <span className="material-symbols-outlined text-[14px]">local_offer</span>
                         Coupon ({appliedCoupon?.code})
                       </span>
-                      <span>−${discountAmount.toLocaleString()}</span>
+                      <span>−${toMoney(discountAmount).toLocaleString()}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm text-slate-600">
                     <span>Taxes &amp; Fees (10%)</span>
-                    <span>${tax.toLocaleString()}</span>
+                    <span>${toMoney(tax).toLocaleString()}</span>
                   </div>
                   <hr className="border-slate-200 my-2" />
                   <div className="flex justify-between items-end">
                     <span className="font-bold text-slate-900">Total</span>
                     <div className="text-right">
-                      <span className="block text-2xl font-bold text-primary">${total.toLocaleString()}</span>
+                      <span className="block text-2xl font-bold text-primary">${toMoney(total).toLocaleString()}</span>
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Includes all taxes</span>
                     </div>
                   </div>
