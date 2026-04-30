@@ -111,8 +111,11 @@ export default function ExplorePage() {
             <a className="text-primary font-semibold text-sm" href="#">Explore</a>
             <Link href="/bookings" className="text-slate-600 hover:text-primary transition-colors text-sm font-medium">Bookings</Link>
             {user && <Link href="/profile" className="text-slate-600 hover:text-primary transition-colors text-sm font-medium">Profile</Link>}
-            {user && (user.role === 'HOST' || user.role === 'ADMIN') && (
-              <Link href="/host/dashboard" className="text-primary font-bold text-sm border border-primary/20 bg-primary/5 px-3 py-1 rounded-lg hover:bg-primary hover:text-white transition-all">Host Dashboard</Link>
+            {user && user.role.toUpperCase() === 'HOST' && (
+              <Link href="/host/dashboard" className="text-primary font-bold text-sm border border-primary/20 bg-primary/5 px-3 py-1 rounded-lg hover:bg-primary hover:text-white transition-all">Manage Properties</Link>
+            )}
+            {user && user.role.toUpperCase() === 'ADMIN' && (
+              <Link href="/admin/dashboard" className="text-rose-500 font-bold text-sm border border-rose-200 bg-rose-50 px-3 py-1 rounded-lg hover:bg-rose-500 hover:text-white transition-all">Admin Panel</Link>
             )}
           </nav>
           <div className="flex items-center gap-4">

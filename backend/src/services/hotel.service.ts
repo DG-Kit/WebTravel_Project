@@ -1,8 +1,12 @@
 import prisma from '../config/prisma';
 
-export const getAllHotels = async (locationId?: number) => {
+export const getAllHotels = async (locationId?: number, ownerId?: number) => {
+  const where: any = {};
+  if (locationId !== undefined) where.location_id = locationId;
+  if (ownerId !== undefined) where.owner_id = ownerId;
+
   return await prisma.hotel.findMany({
-    where: locationId ? { location_id: locationId } : undefined,
+    where: Object.keys(where).length > 0 ? where : undefined,
     include: {
       location: true,
       images: true,

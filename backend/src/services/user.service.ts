@@ -64,3 +64,33 @@ export const updateProfile = async (
 
   return user;
 };
+
+export const getAllUsers = async () => {
+  return await prisma.user.findMany({
+    select: {
+      user_id: true,
+      email: true,
+      full_name: true,
+      phone: true,
+      role: true,
+      created_at: true,
+      is_active: true
+    }
+  });
+};
+
+export const toggleUserStatus = async (user_id: number, is_active: boolean) => {
+  return await prisma.user.update({
+    where: { user_id },
+    data: { is_active },
+    select: { user_id: true, is_active: true, email: true }
+  });
+};
+
+export const adminUpdateUser = async (user_id: number, data: any) => {
+  return await prisma.user.update({
+    where: { user_id },
+    data,
+    select: { user_id: true, email: true, full_name: true, phone: true, role: true, is_active: true }
+  });
+};

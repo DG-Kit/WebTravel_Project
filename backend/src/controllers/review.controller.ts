@@ -81,3 +81,19 @@ export const deleteReview = async (req: AuthRequest, res: Response, next: NextFu
     res.json({ success: true, message: 'Review deleted' });
   } catch (err) { next(err); }
 };
+
+// GET /api/users/reviews - authenticated (via user.routes)
+export const getMyReviews = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const user_id = req.user!.user_id;
+
+    const reviews = await prisma.review.findMany({
+      where: { user_id },
+      include: { hotel: { select: { hotel_id: true, name: true, address: true } } },
+      orderBy: { created_at: 'desc' },
+    });
+
+    res.json({ success: true, count: reviews.length, data: reviews.map(serializeReview) });
+  } catch (err) { next(err); }
+};
+

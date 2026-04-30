@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import * as attractionController from '../controllers/attraction.controller';
+import { authenticate, authorize } from '../middlewares/auth';
 
 const router = Router();
 
 router.get('/', attractionController.getAttractions);
-router.post('/', attractionController.createAttraction);
+router.post('/', authenticate, authorize('ADMIN'), attractionController.createAttraction);
 router.get('/:id', attractionController.getAttraction);
-router.put('/:id', attractionController.updateAttraction);
-router.delete('/:id', attractionController.deleteAttraction);
+router.put('/:id', authenticate, authorize('ADMIN'), attractionController.updateAttraction);
+router.delete('/:id', authenticate, authorize('ADMIN'), attractionController.deleteAttraction);
 
 export default router;

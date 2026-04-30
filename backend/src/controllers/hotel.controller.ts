@@ -5,8 +5,13 @@ import { ZodError } from 'zod';
 
 export const getHotels = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const locationId = req.query.location_id ? parseInt(req.query.location_id as string, 10) : undefined;
-    const hotels = await hotelService.getAllHotels(locationId);
+    const locIdStr = req.query.location_id as string;
+    const ownIdStr = req.query.owner_id as string;
+    
+    const locationId = (locIdStr && !isNaN(parseInt(locIdStr))) ? parseInt(locIdStr, 10) : undefined;
+    const ownerId = (ownIdStr && !isNaN(parseInt(ownIdStr))) ? parseInt(ownIdStr, 10) : undefined;
+    
+    const hotels = await hotelService.getAllHotels(locationId, ownerId);
     
     // Formatting response
     const formattedHotels = hotels.map((hotel: any) => ({
@@ -49,9 +54,16 @@ export const getHotel = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const createHotel = async (req: Request, res: Response, next: NextFunction) => {
+export const createHotel = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const validatedData = hotelSchema.parse(req.body);
+    const user = req.user;
+    let validatedData = hotelSchema.parse(req.body);
+
+    // If user is a HOST, they can only create hotels for themselves
+    if (user.role.toUpperCase() === 'HOST') {
+      validatedData.owner_id = user.user_id;
+    }
+
     const hotel = await hotelService.createHotel(validatedData);
     
     const formattedHotel = {
@@ -74,14 +86,34 @@ export const createHotel = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const updateHotel = async (req: Request, res: Response, next: NextFunction) => {
+export const updateHotel = async (req: any, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id as string, 10);
+    const user = req.user;
+
     if (isNaN(id)) {
       res.status(400).json({ success: false, message: 'Invalid hotel ID' });
       return;
     }
+
+    // Check ownership
+    const existingHotel = await hotelService.getHotelById(id);
+    if (!existingHotel) {
+      res.status(404).json({ success: false, message: 'Hotel not found' });
+      return;
+    }
+
+    if (user.role.toUpperCase() !== 'ADMIN' && existingHotel.owner_id !== user.user_id) {
+      res.status(403).json({ success: false, message: 'Forbidden: You do not own this hotel' });
+      return;
+    }
+
     const validatedData = updateHotelSchema.parse(req.body);
+    // Hosts cannot change the owner of the hotel
+    if (user.role.toUpperCase() === 'HOST') {
+      delete validatedData.owner_id;
+    }
+
     const hotel = await hotelService.updateHotel(id, validatedData);
     
     const formattedHotel = {
@@ -108,13 +140,28 @@ export const updateHotel = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const deleteHotel = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteHotel = async (req: any, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id as string, 10);
+    const user = req.user;
+
     if (isNaN(id)) {
       res.status(400).json({ success: false, message: 'Invalid hotel ID' });
       return;
     }
+
+    // Check ownership
+    const existingHotel = await hotelService.getHotelById(id);
+    if (!existingHotel) {
+      res.status(404).json({ success: false, message: 'Hotel not found' });
+      return;
+    }
+
+    if (user.role.toUpperCase() !== 'ADMIN' && existingHotel.owner_id !== user.user_id) {
+      res.status(403).json({ success: false, message: 'Forbidden: You do not own this hotel' });
+      return;
+    }
+
     await hotelService.deleteHotel(id);
     res.json({ success: true, message: 'Hotel deleted successfully' });
   } catch (error: any) {

@@ -6,6 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import api from '@/lib/api';
 import MyBookings from './MyBookings';
+import MyFavorites from './MyFavorites';
+import MyReviews from './MyReviews';
 
 const TRAVEL_STYLES = [
   { id: 'Adventure', icon: 'hiking', label: 'Adventure' },
@@ -34,7 +36,8 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'profile' | 'bookings'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'bookings' | 'favorites' | 'reviews'>('profile');
+  const [counts, setCounts] = useState({ bookings: 0, favorites: 0 });
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/login');
@@ -51,6 +54,23 @@ export default function ProfilePage() {
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchCounts = async () => {
+      try {
+        const [bRes, fRes] = await Promise.all([
+          api.get('/bookings/my-bookings'),
+          api.get('/users/favorites')
+        ]);
+        setCounts({
+          bookings: bRes.data.data?.length || 0,
+          favorites: fRes.data.data?.length || 0
+        });
+      } catch (e) { console.error(e); }
+    };
+    fetchCounts();
+  }, [user, activeTab]); // Re-fetch on tab change to keep counts fresh
 
   const toggleStyle = (id: string) => setSelectedStyles(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   const toggleSeason = (id: string) => setSelectedSeasons(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
@@ -127,8 +147,8 @@ export default function ProfilePage() {
                   <p className="text-slate-500  text-sm">{user.email}</p>
                 </div>
                 <div className="mt-6 w-full pt-6 border-t border-slate-100  flex justify-around">
-                  <div className="text-center"><p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Trips</p><p className="text-lg font-bold text-primary">0</p></div>
-                  <div className="text-center"><p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Saved</p><p className="text-lg font-bold text-primary">0</p></div>
+                  <div className="text-center"><p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Trips</p><p className="text-lg font-bold text-primary">{counts.bookings}</p></div>
+                  <div className="text-center"><p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Saved</p><p className="text-lg font-bold text-primary">{counts.favorites}</p></div>
                   <div className="text-center"><p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Member</p><p className="text-lg font-bold text-primary capitalize">{user.role?.toLowerCase()}</p></div>
                 </div>
               </div>
@@ -144,20 +164,23 @@ export default function ProfilePage() {
             {/* Main Form Area */}
             <div className="lg:col-span-2 space-y-8">
               {/* Tabs Navbar */}
-              <div className="flex border-b border-slate-200">
-                <button 
-                  onClick={() => setActiveTab('profile')} 
-                  className={`pb-4 px-6 font-bold text-sm transition-colors ${activeTab === 'profile' ? 'border-b-2 border-primary text-primary' : 'text-slate-500 hover:text-slate-800'}`}>
-                  Edit Profile
-                </button>
-                <button 
-                  onClick={() => setActiveTab('bookings')} 
-                  className={`pb-4 px-6 font-bold text-sm transition-colors ${activeTab === 'bookings' ? 'border-b-2 border-primary text-primary' : 'text-slate-500 hover:text-slate-800'}`}>
-                  My Bookings
-                </button>
+              <div className="flex border-b border-slate-200 overflow-x-auto scrollbar-hide">
+                {[
+                  { id: 'profile', label: 'Edit Profile' },
+                  { id: 'bookings', label: 'My Bookings' },
+                  { id: 'favorites', label: 'Saved' },
+                  { id: 'reviews', label: 'Reviews' },
+                ].map(tab => (
+                  <button 
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)} 
+                    className={`pb-4 px-6 font-bold text-sm transition-colors whitespace-nowrap ${activeTab === tab.id ? 'border-b-2 border-primary text-primary' : 'text-slate-500 hover:text-slate-800'}`}>
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
-              {activeTab === 'profile' ? (
+              {activeTab === 'profile' && (
                 <>
                   {error && <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm font-medium">{error}</div>}
                   <section className="glass-card rounded-xl p-8 shadow-sm">
@@ -223,10 +246,12 @@ export default function ProfilePage() {
                   {isSaving ? <><span className="material-symbols-outlined animate-spin text-sm">sync</span> Saving...</> : 'Save Changes'}
                 </button>
               </div>
-              </>
-              ) : (
-                <MyBookings />
+                </>
               )}
+
+              {activeTab === 'bookings' && <MyBookings />}
+              {activeTab === 'favorites' && <MyFavorites />}
+              {activeTab === 'reviews' && <MyReviews />}
             </div>
           </div>
         </main>
