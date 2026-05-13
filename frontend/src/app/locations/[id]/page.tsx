@@ -16,12 +16,18 @@ const CATEGORY_META: Record<string, { icon: string; color: string; bg: string }>
 };
 
 const LOCATION_IMAGES: Record<string, string> = {
-  'Da Nang': 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=1200&q=80',
-  'Tokyo': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80',
-  'Maldives': 'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=1200&q=80',
+  'Tokyo': 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
+  'Da Nang': 'https://images.unsplash.com/photo-1559592490-34fa79075e1a?auto=format&fit=crop&w=1200&q=80',
+  'Maldives': 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80',
   'Paris': 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80',
   'Bali': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80',
   'Dubai': 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80',
+  'Ha Noi': 'https://images.unsplash.com/rgP1_c9cwNg?auto=format&fit=crop&w=1200&q=80',
+  'Ho Chi Minh City': 'https://images.unsplash.com/eilpDNi_pV4?auto=format&fit=crop&w=1200&q=80',
+  'Da Lat': 'https://images.unsplash.com/_F03TiKqBMM?auto=format&fit=crop&w=1200&q=80',
+  'Sapa': 'https://images.unsplash.com/WSwa5xY3K8Q?auto=format&fit=crop&w=1200&q=80',
+  'Ha Long Bay': 'https://images.unsplash.com/aXVb-OcEGkg?auto=format&fit=crop&w=1200&q=80',
+  'Ninh Binh': 'https://images.unsplash.com/EiieMLdJKik?auto=format&fit=crop&w=1200&q=80',
 };
 
 const FALLBACK_BG = 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80';
@@ -72,7 +78,7 @@ export default function LocationDetailPage() {
     );
   }
 
-  const heroImg = location ? (LOCATION_IMAGES[location.name] || FALLBACK_BG) : FALLBACK_BG;
+  const heroImg = location ? (location.image_url || LOCATION_IMAGES[location.name] || FALLBACK_BG) : FALLBACK_BG;
 
   return (
     <div className="bg-background-light text-slate-900 font-display min-h-screen">
@@ -124,12 +130,22 @@ export default function LocationDetailPage() {
               {attractions.map((attraction: any) => {
                 const meta = CATEGORY_META[attraction.category] || CATEGORY_META['default'];
                 return (
-                  <div key={attraction.attraction_id} className="bg-white rounded-2xl border border-slate-200/70 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                    {/* Category banner */}
-                    <div className={`px-5 py-3 flex items-center gap-2 ${meta.bg}`}>
-                      <span className={`material-symbols-outlined text-xl ${meta.color}`}>{meta.icon}</span>
-                      <span className={`text-xs font-bold uppercase tracking-wider ${meta.color}`}>{attraction.category}</span>
-                    </div>
+                  <div key={attraction.attraction_id} className="bg-white rounded-2xl border border-slate-200/70 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col">
+                    {/* Image or Category banner */}
+                    {attraction.image_url ? (
+                      <div className="h-40 relative overflow-hidden bg-slate-200 shrink-0">
+                        <img src={attraction.image_url} alt={attraction.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div className={`absolute top-0 right-0 px-3 py-1.5 flex items-center gap-1 ${meta.bg} backdrop-blur-md rounded-bl-xl shadow-sm z-10`}>
+                           <span className={`material-symbols-outlined text-sm ${meta.color}`}>{meta.icon}</span>
+                           <span className={`text-[10px] font-bold uppercase tracking-wider ${meta.color}`}>{attraction.category}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={`px-5 py-3 flex items-center gap-2 ${meta.bg} shrink-0`}>
+                        <span className={`material-symbols-outlined text-xl ${meta.color}`}>{meta.icon}</span>
+                        <span className={`text-xs font-bold uppercase tracking-wider ${meta.color}`}>{attraction.category}</span>
+                      </div>
+                    )}
                     <div className="p-5">
                       <div className="flex items-start justify-between mb-3">
                         <h3 className="font-extrabold text-slate-900 text-lg leading-tight">{attraction.name}</h3>
@@ -177,7 +193,7 @@ export default function LocationDetailPage() {
                 <Link href={`/hotels/${hotel.hotel_id}`} key={hotel.hotel_id} className="bg-white rounded-2xl border border-slate-200/70 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group block">
                   <div className="h-48 relative overflow-hidden bg-slate-200">
                     <img
-                      src={hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'}
+                      src={hotel.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'}
                       alt={hotel.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />

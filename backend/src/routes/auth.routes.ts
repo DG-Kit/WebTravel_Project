@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import { register, login } from '../controllers/auth.controller';
+import { register, login, logout, forgotPassword, handleResetPassword, handleVerifyEmail } from '../controllers/auth.controller';
+import { authenticate } from '../middlewares/auth';
+import prisma from '../config/prisma';
 import rateLimit from 'express-rate-limit';
 
 const router = Router();
@@ -17,5 +19,17 @@ router.post('/register', register);
 
 // POST /api/auth/login
 router.post('/login', loginLimiter, login);
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', forgotPassword);
+
+// POST /api/auth/reset-password
+router.post('/reset-password', handleResetPassword);
+
+// GET /api/auth/verify-email
+router.get('/verify-email', handleVerifyEmail);
+
+// POST /api/auth/logout — invalidate token in DB
+router.post('/logout', authenticate, logout);
 
 export default router;

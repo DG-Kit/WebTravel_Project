@@ -5,6 +5,9 @@ import { authenticate, authorize } from '../middlewares/auth';
 
 const router = Router();
 
+router.get('/metadata', hotelController.getFilterMetadata);
+router.get('/personal-recommendations', authenticate, hotelController.getRecommendedHotels);
+
 router.get('/', hotelController.getHotels);
 router.post('/', authenticate, authorize('ADMIN', 'HOST'), hotelController.createHotel);
 router.get('/:id', hotelController.getHotel);

@@ -8,7 +8,10 @@ import tagRoutes from './routes/tag.routes';
 import locationRoutes from './routes/location.routes';
 import attractionRoutes from './routes/attraction.routes';
 import hotelRoutes from './routes/hotel.routes';
+import recommendationRoutes from './routes/recommendation.routes';
+import itineraryRoutes from './routes/itinerary.routes';
 import bookingRoutes from './routes/booking.routes';
+import notificationRoutes from './routes/notification.routes';
 import { errorHandler, notFound } from './middlewares/errorHandler';
 
 const app = express();
@@ -59,7 +62,10 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/attractions', attractionRoutes);
 app.use('/api/hotels', hotelRoutes);
+app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/itineraries', itineraryRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ========================
 // Error Handling

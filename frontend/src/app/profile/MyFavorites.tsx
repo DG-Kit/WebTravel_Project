@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Favorite {
   favorite_id: number;
@@ -18,6 +19,7 @@ interface Favorite {
 }
 
 export default function MyFavorites() {
+  const { t } = useLanguage();
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,15 +54,15 @@ export default function MyFavorites() {
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-slate-900">Saved Hotels</h1>
-        <p className="text-sm text-slate-500">Your collection of favorite properties.</p>
+        <h1 className="text-2xl font-bold text-slate-900">{t('profile.favorites.title')}</h1>
+        <p className="text-sm text-slate-500">{t('profile.favorites.subtitle')}</p>
       </div>
 
       {favorites.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center text-slate-500">
           <span className="material-symbols-outlined text-5xl mb-4 opacity-20">favorite_border</span>
-          <p>You haven't saved any hotels yet.</p>
-          <Link href="/explore" className="text-primary font-bold mt-4 inline-block hover:underline">Explore properties</Link>
+          <p>{t('profile.favorites.noFavorites')}</p>
+          <Link href="/explore" className="text-primary font-bold mt-4 inline-block hover:underline">{t('profile.favorites.exploreProperties')}</Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -86,7 +88,7 @@ export default function MyFavorites() {
                   </button>
                   {minPrice && (
                     <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-sm font-bold text-primary">
-                      From ${minPrice}
+                      {t('profile.favorites.from')} ${minPrice}
                     </div>
                   )}
                 </div>
@@ -106,7 +108,7 @@ export default function MyFavorites() {
                     href={`/hotels/${hotel.hotel_id}`}
                     className="w-full py-2.5 text-center bg-slate-900 text-white rounded-xl text-sm font-bold block hover:bg-primary transition-colors"
                   >
-                    View Details
+                    {t('profile.favorites.viewDetails')}
                   </Link>
                 </div>
               </div>

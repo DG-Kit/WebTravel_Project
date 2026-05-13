@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 import api from '@/lib/api';
 
 interface User {
@@ -14,6 +16,8 @@ interface User {
 }
 
 export default function AdminUsersPage() {
+  const { user: currentUser } = useAuth();
+  const { showToast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
@@ -50,8 +54,8 @@ export default function AdminUsersPage() {
         setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, is_active: !currentStatus } : u));
       }
     } catch (error) {
-      console.error('Failed to toggle user status:', error);
-      alert('Failed to update user status');
+      console.error('Failed to update status:', error);
+      showToast('Failed to update user status', 'error');
     } finally {
       setActionLoading(null);
     }
@@ -74,8 +78,8 @@ export default function AdminUsersPage() {
         setShowEditModal(false);
       }
     } catch (error) {
-      console.error('Failed to update user:', error);
-      alert('Failed to update user');
+      console.error('Update failed:', error);
+      showToast('Failed to update user', 'error');
     } finally {
       setFormLoading(false);
     }

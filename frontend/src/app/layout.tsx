@@ -1,5 +1,8 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { AuthProvider } from "../context/AuthContext";
+import { ToastProvider } from "../context/ToastContext";
+import { LanguageProvider } from "../context/LanguageContext";
+import ConditionalLayout from "../components/common/ConditionalLayout";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,9 +26,15 @@ export default function RootLayout({
       <body
         className="antialiased"
       >
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ToastProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <ConditionalLayout>
+                {children}
+              </ConditionalLayout>
+            </AuthProvider>
+          </LanguageProvider>
+        </ToastProvider>
       </body>
     </html>
   );

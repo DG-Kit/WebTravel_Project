@@ -11,7 +11,14 @@ export const getAllHotels = async (locationId?: number, ownerId?: number) => {
       location: true,
       images: true,
       amenities: true,
-      tags: { include: { tag: true } }
+      owner: {
+        select: {
+          full_name: true,
+          email: true
+        }
+      },
+      tags: { include: { tag: true } },
+      rooms: true
     }
   });
 };
@@ -83,6 +90,16 @@ export const updateHotel = async (id: number, data: any) => {
     await prisma.hotelImage.deleteMany({ where: { hotel_id: id } });
   }
 
+  // Handle room updates if provided
+  if (rooms !== undefined) {
+    // Delete existing rooms and their images first
+    const existingRooms = await prisma.room.findMany({ where: { hotel_id: id } });
+    for (const room of existingRooms) {
+      await prisma.roomImage.deleteMany({ where: { room_id: room.room_id } });
+    }
+    await prisma.room.deleteMany({ where: { hotel_id: id } });
+  }
+
   return await prisma.hotel.update({
     where: { hotel_id: id },
     data: {
@@ -95,12 +112,26 @@ export const updateHotel = async (id: number, data: any) => {
       } : {}),
       ...(image_urls !== undefined ? {
         images: { create: image_urls.map((url: string) => ({ image_url: url })) }
+      } : {}),
+      ...(rooms !== undefined ? {
+        rooms: {
+          create: rooms.map((room: any) => ({
+            room_type: room.room_type,
+            price: room.price,
+            capacity: room.capacity,
+            is_available: room.is_available ?? true,
+            images: room.image_urls && room.image_urls.length > 0 ? {
+              create: room.image_urls.map((url: string) => ({ image_url: url }))
+            } : undefined
+          }))
+        }
       } : {})
     },
     include: {
       images: true,
       amenities: true,
-      tags: { include: { tag: true } }
+      tags: { include: { tag: true } },
+      rooms: { include: { images: true } }
     }
   });
 };

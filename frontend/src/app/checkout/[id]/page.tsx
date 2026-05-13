@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 import api from '@/lib/api';
 import Link from 'next/link';
 
-export default function CheckoutPage() {
-  const { id } = useParams();
+export default function CheckoutPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: bookingId } = React.use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const { showToast } = useToast();
   
   const [booking, setBooking] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +26,7 @@ export default function CheckoutPage() {
 
   const fetchBooking = async () => {
     try {
-      const res = await api.get(`/bookings/${id}`);
+      const res = await api.get(`/bookings/${bookingId}`);
       if (res.data.success) {
         setBooking(res.data.data);
         // Hydrate coupon if already applied
@@ -39,17 +41,17 @@ export default function CheckoutPage() {
       }
     } catch (err) {
       console.error('Failed to fetch booking', err);
-      alert('Booking not found or access denied');
-      router.push('/');
+      showToast('Booking not found or access denied', 'error');
+      router.push('/explore');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (id) fetchBooking();
+    if (bookingId) fetchBooking();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [bookingId]);
 
   const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
@@ -59,7 +61,7 @@ export default function CheckoutPage() {
       // Validate coupon via a dedicated endpoint
       const res = await api.post('/bookings/validate-coupon', {
         coupon_code: couponInput.trim().toUpperCase(),
-        booking_id: id,
+        booking_id: bookingId,
       });
       if (res.data.success) {
         setAppliedCoupon({ code: res.data.data.code, discount: res.data.data.discount_amount });
@@ -85,13 +87,13 @@ export default function CheckoutPage() {
   const handlePayment = async () => {
     setIsPaying(true);
     try {
-      const res = await api.put(`/bookings/${id}/pay`, { payment_method: paymentMethod });
+      const res = await api.put(`/bookings/${bookingId}/pay`, { payment_method: paymentMethod });
       if (res.data.success) {
-        alert('Payment successful!');
-        router.push('/profile');
+        showToast('Payment successful!', 'success');
+        router.push('/bookings?success=true');
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Payment failed');
+      showToast(err.response?.data?.message || 'Payment failed', 'error');
     } finally {
       setIsPaying(false);
     }

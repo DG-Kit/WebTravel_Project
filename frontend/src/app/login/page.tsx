@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import api from '@/lib/api';
 
 export default function LoginPage() {
@@ -13,6 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +28,7 @@ export default function LoginPage() {
         router.push('/profile');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại sau.');
+      setError(err.response?.data?.message || t('auth.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -48,8 +51,8 @@ export default function LoginPage() {
             <h2 className="text-2xl font-bold tracking-tight">WebTravel</h2>
           </div>
           <div className="relative z-10 max-w-lg">
-            <h1 className="text-5xl font-extrabold text-white leading-tight mb-4">Your journey <br/>starts with a single click.</h1>
-            <p className="text-white/90 text-lg font-medium">Access exclusive travel deals and personalized itineraries curated just for you.</p>
+            <h1 className="text-5xl font-extrabold text-white leading-tight mb-4">{t('auth.loginHeroTitle')}</h1>
+            <p className="text-white/90 text-lg font-medium">{t('auth.loginHeroSubtitle')}</p>
           </div>
           <div className="relative z-10 flex items-center gap-4">
             <div className="flex -space-x-3">
@@ -57,29 +60,35 @@ export default function LoginPage() {
               <img alt="" className="size-10 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6GA3xjbKvZrfcX18nOm7M9N6AOvlXZ980c1azoq9bC1uglVHoM50G79z820ZmU9VLPBo8ngkWykxRQeVENHdWNgfpP9v0M3eyTtQV23teLd9kgakwg7sFdl6yNw27LB8hdd1xfqQReiMALa4Xbn1OiGpdkhr1IGooLmFnM5yxQPKqBVS4xnc5eXJXdKNExWE2Fu_x0zQPEqyR3hQ7vRMejvLOSjNLgfALFsP7xE5K2_FqyIMXlEivmHqKKs6AXbfbsl3gZIeKyRc" />
               <img alt="" className="size-10 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvQGw-L50osYoyTNm76uIqJT0qkiKqE4-3yKvTGoFE-PT695ngcEqDcaU8fglQSMPw2Amd-EaBVkSVroeJORAOI2p7kVhemWJslu8Xpx3tP4RGykRy3kAFP3yIIJB4i1hQV6hij4MXC99-bQpTC22prIFF3qS1GB2FT_6QchGD7M_rZmgebKgC9Am5iLkhl0zoaktmkfq4c0m6AIbYH4Y0t-nx-2Y2jwCT0aTgsCCwsNJ10TqseaDDJLk44pd-AhPARxIOe0NVosw" />
             </div>
-            <p className="text-white text-sm font-semibold">Join 10k+ travelers this month</p>
+            <p className="text-white text-sm font-semibold">{t('auth.joinTravelers')}</p>
           </div>
         </div>
 
         {/* Right form panel */}
-        <div className="flex flex-1 flex-col justify-center items-center px-6 py-12 lg:px-24 bg-background-light ">
+        <div className="flex flex-1 flex-col justify-center items-center px-6 py-12 lg:px-24 bg-background-light relative">
+          {/* Mobile language switcher */}
+          <div className="absolute top-6 right-6 flex items-center bg-white/50 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-slate-100">
+            <button onClick={() => setLanguage('en')} className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-all ${language === 'en' ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>EN</button>
+            <button onClick={() => setLanguage('vi')} className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-all ${language === 'vi' ? 'bg-primary text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>VI</button>
+          </div>
+
           <div className="w-full max-w-md">
             <div className="lg:hidden mb-12 flex items-center gap-2">
               <span className="text-primary material-symbols-outlined text-4xl">flight_takeoff</span>
               <h2 className="text-slate-900  text-2xl font-bold">WebTravel</h2>
             </div>
             <div className="mb-10">
-              <h2 className="text-3xl font-extrabold text-slate-900 ">Welcome Back</h2>
-              <p className="mt-2 text-slate-500 ">Please enter your details to sign in.</p>
+              <h2 className="text-3xl font-extrabold text-slate-900 ">{t('auth.loginTitle')}</h2>
+              <p className="mt-2 text-slate-500 ">{t('auth.loginSubtitle')}</p>
             </div>
             <form className="space-y-6" onSubmit={handleSubmit}>
               {error && <div className="p-3 rounded-lg bg-red-50  border border-red-200  text-red-600  text-sm font-medium">{error}</div>}
               <div>
-                <label className="block text-sm font-semibold text-slate-700  mb-2" htmlFor="email">Email Address</label>
+                <label className="block text-sm font-semibold text-slate-700  mb-2" htmlFor="email">{t('auth.email')}</label>
                 <input className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary   text-slate-900  placeholder:text-slate-400 outline-none transition-all" id="email" placeholder="name@example.com" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700  mb-2" htmlFor="password">Password</label>
+                <label className="block text-sm font-semibold text-slate-700  mb-2" htmlFor="password">{t('auth.password')}</label>
                 <div className="relative">
                   <input className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary   text-slate-900  placeholder:text-slate-400 outline-none transition-all" id="password" placeholder="••••••••" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required />
                   <button className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-primary transition-colors cursor-pointer" type="button" onClick={() => setShowPassword(!showPassword)}>
@@ -89,17 +98,17 @@ export default function LoginPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <input className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary  " id="remember-me" name="remember-me" type="checkbox" />
-                  <label className="ml-2 block text-sm font-medium text-slate-600 " htmlFor="remember-me">Remember me</label>
+                  <input className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" id="remember-me" name="remember-me" type="checkbox" />
+                  <label className="ml-2 block text-sm font-medium text-slate-600" htmlFor="remember-me">{t('auth.rememberMe')}</label>
                 </div>
-                <a className="text-sm font-bold text-primary hover:text-primary/80 transition-colors" href="#">Forgot password?</a>
+                <Link className="text-sm font-bold text-primary hover:text-primary/80 transition-colors" href="/forgot-password">{t('auth.forgotPassword')}</Link>
               </div>
               <button className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all active:scale-[0.98] disabled:opacity-70" type="submit" disabled={isLoading}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? t('profile.saving') : t('auth.signIn')}
               </button>
               <div className="relative my-8">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 "></div></div>
-                <div className="relative flex justify-center text-sm"><span className="px-2 bg-background-light  text-slate-500">Or continue with</span></div>
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
+                <div className="relative flex justify-center text-sm"><span className="px-2 bg-background-light text-slate-500">{t('auth.continueWith')}</span></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200  bg-white  px-4 py-3 text-sm font-semibold text-slate-700  hover:bg-slate-50 :bg-slate-800 transition-colors" type="button">
@@ -112,8 +121,8 @@ export default function LoginPage() {
                 </button>
               </div>
             </form>
-            <p className="mt-10 text-center text-sm text-slate-500 ">
-              Don't have an account? <a className="font-bold text-primary hover:text-primary/80 transition-colors" href="/register">Sign up for free</a>
+             <p className="mt-10 text-center text-sm text-slate-500 ">
+              {t('auth.noAccount')} <a className="font-bold text-primary hover:text-primary/80 transition-colors" href="/register">{t('common.signup')}</a>
             </p>
           </div>
         </div>

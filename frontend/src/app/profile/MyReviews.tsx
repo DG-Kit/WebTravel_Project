@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Review {
   review_id: string;
@@ -17,6 +18,7 @@ interface Review {
 }
 
 export default function MyReviews() {
+  const { t } = useLanguage();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -38,7 +40,7 @@ export default function MyReviews() {
   }, []);
 
   const handleDelete = async (hotelId: number, reviewId: string) => {
-    if (!confirm('Are you sure you want to delete this review?')) return;
+    if (!confirm(t('profile.reviews.deleteConfirm'))) return;
     try {
       await api.delete(`/hotels/${hotelId}/reviews/${reviewId}`);
       setReviews(prev => prev.filter(r => r.review_id !== reviewId));
@@ -52,14 +54,14 @@ export default function MyReviews() {
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-slate-900">My Reviews</h1>
-        <p className="text-sm text-slate-500">The feedback you've shared with the community.</p>
+        <h1 className="text-2xl font-bold text-slate-900">{t('profile.reviews.title')}</h1>
+        <p className="text-sm text-slate-500">{t('profile.reviews.subtitle')}</p>
       </div>
 
       {reviews.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center text-slate-500">
           <span className="material-symbols-outlined text-5xl mb-4 opacity-20">rate_review</span>
-          <p>You haven't written any reviews yet.</p>
+          <p>{t('profile.reviews.noReviews')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -95,7 +97,7 @@ export default function MyReviews() {
                   className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-[16px]">delete</span>
-                  Delete Review
+                  {t('profile.reviews.deleteReview')}
                 </button>
               </div>
             </div>

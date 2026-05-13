@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import Link from 'next/link';
+import { useToast } from '@/context/ToastContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Booking {
   booking_id: string;
@@ -22,6 +24,8 @@ interface Booking {
 }
 
 export default function MyBookings() {
+  const { showToast } = useToast();
+  const { t } = useLanguage();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED'>('ALL');
@@ -44,13 +48,13 @@ export default function MyBookings() {
   }, []);
 
   const handleCancel = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+    if (!confirm(t('profile.bookings.cancelConfirm'))) return;
     try {
       await api.put(`/bookings/${bookingId}/cancel`);
-      alert('Booking cancelled successfully');
+      showToast(t('profile.bookings.cancelSuccess'), 'success');
       fetchBookings();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to cancel booking');
+      showToast(err.response?.data?.message || 'Failed to cancel booking', 'error');
     }
   };
 
@@ -77,7 +81,7 @@ export default function MyBookings() {
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold text-slate-900">My Bookings</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t('profile.bookings.title')}</h1>
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {['ALL', 'UPCOMING', 'COMPLETED', 'CANCELLED'].map(f => (
@@ -90,7 +94,7 @@ export default function MyBookings() {
                   : 'bg-white/50 text-slate-600 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              {f === 'ALL' ? 'All Bookings' : f.charAt(0) + f.slice(1).toLowerCase()}
+              {f === 'ALL' ? t('profile.bookings.all') : t(`profile.bookings.${f.toLowerCase()}`)}
             </button>
           ))}
         </div>
@@ -98,7 +102,7 @@ export default function MyBookings() {
 
       <div className="flex flex-col gap-4">
         {filteredBookings.length === 0 ? (
-          <div className="glass-card rounded-2xl p-12 text-center text-slate-500">No bookings found.</div>
+          <div className="glass-card rounded-2xl p-12 text-center text-slate-500">{t('profile.bookings.noBookings')}</div>
         ) : (
           filteredBookings.map((booking) => (
             <article key={booking.booking_id} className="glass-card bg-white/70 backdrop-blur-md rounded-2xl p-4 flex flex-col sm:flex-row gap-5 shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 hover:shadow-md duration-300">
@@ -128,25 +132,25 @@ export default function MyBookings() {
                     </div>
                     <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                       <span className="material-symbols-outlined text-[16px] text-primary">group</span>
-                      {booking.guests} Guests
+                      {booking.guests} {t('profile.bookings.guests')}
                     </div>
                   </div>
                 </div>
               </div>
               <div className="sm:w-40 shrink-0 flex flex-col justify-between items-end border-t sm:border-t-0 sm:border-l border-slate-200 pt-4 sm:pt-0 sm:pl-5 mt-2 sm:mt-0 py-1">
                 <div className="text-right w-full flex sm:flex-col justify-between sm:justify-start items-center sm:items-end mb-4 sm:mb-0">
-                  <div className="text-sm text-slate-500 font-medium">Total Price</div>
+                  <div className="text-sm text-slate-500 font-medium">{t('profile.bookings.totalPrice')}</div>
                   <div className="text-xl font-bold text-slate-900 mt-0.5">${Number(booking.total_price).toLocaleString()}</div>
                 </div>
                 <div className="flex flex-row sm:flex-col gap-2 w-full">
                   {(booking.booking_status === 'PENDING_PAYMENT' || booking.booking_status === 'CONFIRMED') && (
                     <Link href={`/checkout/${booking.booking_id}`} className="flex-1 py-2 text-center bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full text-sm font-semibold transition-colors">
-                      {booking.booking_status === 'PENDING_PAYMENT' ? 'Pay Now' : 'View Details'}
+                      {booking.booking_status === 'PENDING_PAYMENT' ? t('profile.bookings.payNow') : t('profile.bookings.viewDetails')}
                     </Link>
                   )}
                   {booking.booking_status !== 'CANCELLED' && new Date(booking.check_in) > new Date() && (
                     <button onClick={() => handleCancel(booking.booking_id)} className="flex-1 py-2 text-red-600 hover:bg-red-50 rounded-full text-sm font-semibold transition-colors">
-                      Cancel Booking
+                      {t('profile.bookings.cancelBooking')}
                     </button>
                   )}
                 </div>

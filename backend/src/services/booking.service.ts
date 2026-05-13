@@ -243,6 +243,34 @@ export const getMyBookings = async (userId: number) => {
   });
 };
 
+export const getHostBookings = async (hostId: number) => {
+  return await prisma.booking.findMany({
+    where: {
+      hotel: {
+        owner_id: hostId
+      }
+    },
+    include: {
+      hotel: {
+        select: { name: true, address: true, images: true }
+      },
+      user: {
+        select: { full_name: true, email: true, phone: true }
+      },
+      details: {
+        include: {
+          room: { select: { room_type: true } }
+        }
+      },
+      payment: true,
+      coupons: {
+        select: { discount_amount: true, coupon: { select: { code: true } } }
+      }
+    },
+    orderBy: { created_at: 'desc' }
+  });
+};
+
 export const getBookingById = async (bookingIdStr: string, userId: number) => {
   const bookingId = BigInt(bookingIdStr);
   const booking = await prisma.booking.findUnique({
@@ -262,7 +290,7 @@ export const getBookingById = async (bookingIdStr: string, userId: number) => {
   });
 
   if (!booking) throw new Error('Booking not found');
-  if (booking.user_id !== userId) throw new Error('Unauthorized to view this booking');
+  if (Number(booking.user_id) !== Number(userId)) throw new Error('Unauthorized to view this booking');
 
   return booking;
 };
@@ -307,7 +335,7 @@ export const simulatePayment = async (bookingIdStr: string, userId: number) => {
   const updated = await prisma.$transaction(async (tx) => {
     const b = await tx.booking.update({
       where: { booking_id: bookingId },
-      data: { booking_status: 'CONFIRMED' }
+      data: { booking_status: 'PAID' }
     });
 
     await tx.payment.update({
@@ -320,6 +348,55 @@ export const simulatePayment = async (bookingIdStr: string, userId: number) => {
     
     return b;
   });
+
+  return updated;
+};
+
+export const confirmBooking = async (bookingIdStr: string, hostId: number) => {
+  const bookingId = BigInt(bookingIdStr);
+  const booking = await prisma.booking.findUnique({
+    where: { booking_id: bookingId },
+    include: { hotel: true, user: true }
+  });
+
+  if (!booking) throw new Error('Booking not found');
+  if (booking.hotel.owner_id !== hostId) throw new Error('Unauthorized to confirm this booking');
+  if (booking.booking_status !== 'PAID') {
+    throw new Error('Booking must be paid before confirmation');
+  }
+
+  const updated = await prisma.booking.update({
+    where: { booking_id: bookingId },
+    data: { booking_status: 'CONFIRMED' }
+  });
+
+  // Create in-app notification for user
+  try {
+    await prisma.notification.create({
+      data: {
+        user_id: booking.user_id,
+        title: '🎉 Booking Confirmed!',
+        message: `Your booking at ${booking.hotel.name} (Check-in: ${booking.check_in.toLocaleDateString('vi-VN')}) has been confirmed by the host. We look forward to welcoming you!`,
+        type: 'BOOKING_CONFIRMED',
+      }
+    });
+  } catch (err) {
+    console.error('Failed to create notification', err);
+  }
+
+  // Send confirmation email
+  try {
+    const mailService = (await import('./mail.service')).default;
+    await mailService.sendBookingConfirmationEmail(booking.user.email, {
+      booking_id: booking.booking_id.toString(),
+      hotel_name: booking.hotel.name,
+      check_in: booking.check_in,
+      check_out: booking.check_out,
+      total_price: Number(booking.total_price)
+    });
+  } catch (err) {
+    console.error('Failed to send confirmation email', err);
+  }
 
   return updated;
 };

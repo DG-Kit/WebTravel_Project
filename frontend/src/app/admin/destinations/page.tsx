@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/context/ToastContext';
 import api from '@/lib/api';
 
 interface Location {
@@ -22,6 +23,7 @@ interface Attraction {
 }
 
 export default function AdminDestinationsPage() {
+  const { showToast } = useToast();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -93,12 +95,14 @@ export default function AdminDestinationsPage() {
       if (editingLocation) {
         await api.put(`/locations/${editingLocation.location_id}`, locFormData);
         setLocations(prev => prev.map(l => l.location_id === editingLocation.location_id ? { ...l, ...locFormData } : l));
+        showToast('Location updated successfully', 'success');
       } else {
         const res = await api.post('/locations', locFormData);
         setLocations(prev => [...prev, res.data.data]);
+        showToast('Location added successfully', 'success');
       }
       setShowLocModal(false);
-    } catch (error) { alert('Failed to save location'); } finally { setFormLoading(false); }
+    } catch (error) { showToast('Failed to save location', 'error'); } finally { setFormLoading(false); }
   };
 
   // Attraction CRUD
@@ -117,20 +121,27 @@ export default function AdminDestinationsPage() {
       if (editingAttraction) {
         await api.put(`/attractions/${editingAttraction.attraction_id}`, data);
         setAttractions(prev => prev.map(a => a.attraction_id === editingAttraction.attraction_id ? { ...a, ...attFormData } : a));
+        showToast('Attraction updated successfully', 'success');
       } else {
         const res = await api.post('/attractions', data);
         setAttractions(prev => [...prev, res.data.data]);
+        showToast('Attraction added successfully', 'success');
       }
       setShowAttModal(false);
-    } catch (error) { alert('Failed to save attraction'); } finally { setFormLoading(false); }
+    } catch (error) { showToast('Failed to save attraction', 'error'); } finally { setFormLoading(false); }
   };
 
   const handleDeleteAttraction = async (id: number) => {
     if (!confirm('Delete this attraction?')) return;
     try {
-      await api.delete(`/attractions/${id}`);
-      setAttractions(prev => prev.filter(a => a.attraction_id !== id));
-    } catch (error) { alert('Failed to delete attraction'); }
+      const response = await api.delete(`/attractions/${id}`);
+      if (response.data.success) {
+        fetchDestinations();
+        setAttractions(prev => prev.filter(a => a.attraction_id !== id));
+      }
+    } catch (error) { 
+      showToast('Failed to delete attraction', 'error'); 
+    }
   };
 
   if (loading) return <div className="animate-pulse bg-slate-200 h-64 rounded-2xl"></div>;

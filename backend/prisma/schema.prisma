@@ -15,6 +15,7 @@ model User {
   phone                 String?              @db.VarChar(20)
   role                  String               @default("USER") @db.VarChar(50)
   is_active             Boolean              @default(true)
+  is_verified           Boolean              @default(false)
   created_at            DateTime             @default(now())
   updated_at            DateTime             @updatedAt
   auth_tokens           AuthToken[]
@@ -29,6 +30,7 @@ model User {
   user_coupons          UserCoupon[]
   user_preferences      UserPreference?
   search_history        UserSearchHistory[]
+  saved_itineraries     SavedItinerary[]
 }
 
 model AuthToken {
@@ -97,13 +99,15 @@ model AttractionTag {
 }
 
 model Location {
-  location_id Int          @id @default(autoincrement())
-  name        String       @db.NVarChar(255)
-  country     String       @db.NVarChar(255)
-  latitude    Float
-  longitude   Float
-  attractions Attraction[]
-  hotels      Hotel[]
+  location_id       Int              @id @default(autoincrement())
+  name              String           @db.NVarChar(255)
+  country           String           @db.NVarChar(255)
+  latitude          Float
+  longitude         Float
+  image_url         String?          @db.VarChar(500)
+  attractions       Attraction[]
+  hotels            Hotel[]
+  saved_itineraries SavedItinerary[]
 }
 
 model Attraction {
@@ -113,6 +117,7 @@ model Attraction {
   description        String?         @db.NText
   popularity_score   Float           @default(0.0)
   best_time_to_visit String?         @db.VarChar(100)
+  image_url          String?         @db.VarChar(500)
   location_id        Int
   location           Location        @relation(fields: [location_id], references: [location_id])
   tags               AttractionTag[]
@@ -137,8 +142,9 @@ model Hotel {
   images           HotelImage[]
   tags             HotelTag[]
   recommendations  RecommendationLog[]
-  reviews          Review[]
-  rooms            Room[]
+  reviews           Review[]
+  rooms             Room[]
+  saved_itineraries SavedItinerary[]
 }
 
 model HotelImage {
@@ -295,4 +301,17 @@ model RecommendationLog {
   hotel_id       Int
   hotel          Hotel    @relation(fields: [hotel_id], references: [hotel_id], onUpdate: NoAction)
   user           User     @relation(fields: [user_id], references: [user_id], onUpdate: NoAction)
+}
+
+model SavedItinerary {
+  itinerary_id   Int      @id @default(autoincrement())
+  user_id        Int
+  location_id    Int
+  hotel_id       Int
+  itinerary_data String   @db.NText
+  created_at     DateTime @default(now())
+  
+  user           User     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  location       Location @relation(fields: [location_id], references: [location_id], onDelete: NoAction, onUpdate: NoAction)
+  hotel          Hotel    @relation(fields: [hotel_id], references: [hotel_id], onDelete: NoAction, onUpdate: NoAction)
 }

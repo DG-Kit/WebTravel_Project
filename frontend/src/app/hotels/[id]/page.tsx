@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
+import { useLanguage } from '@/context/LanguageContext';
 import api from '@/lib/api';
 
 // Map amenity name keywords to specific Material Symbols icons
@@ -51,7 +53,8 @@ const AMENITY_ICONS: Record<string, string> = {
   'view': 'landscape',
 };
 
-function getAmenityIcon(amenityName: string): string {
+function getAmenityIcon(amenity: any): string {
+  const amenityName = typeof amenity === 'string' ? amenity : (amenity.amenity_name || '');
   const lower = amenityName.toLowerCase();
   for (const [key, icon] of Object.entries(AMENITY_ICONS)) {
     if (lower.includes(key)) return icon;
@@ -68,6 +71,49 @@ interface Room {
   images?: { image_url: string }[];
 }
 
+const TAG_DESCRIPTIONS: Record<string, { desc: { en: string; vi: string }; icon: string; color: string }> = {
+  'Nature': { 
+    desc: { en: 'Immerse yourself in nature with lush green spaces and fresh air.', vi: 'Hòa mình vào thiên nhiên với không gian xanh mát và không khí trong lành.' }, 
+    icon: 'park', color: 'text-emerald-600 bg-emerald-50' 
+  },
+  'Romantic': { 
+    desc: { en: 'Romantic atmosphere, ideal for couples and honeymoons.', vi: 'Không gian lãng mạn, lý tưởng cho các cặp đôi và kỳ nghỉ trăng mật.' }, 
+    icon: 'favorite', color: 'text-rose-600 bg-rose-50' 
+  },
+  'Luxury': { 
+    desc: { en: 'Experience premium, high-end service with top-tier amenities.', vi: 'Trải nghiệm dịch vụ cao cấp, sang trọng với tiện nghi bậc nhất.' }, 
+    icon: 'diamond', color: 'text-amber-600 bg-amber-50' 
+  },
+  'Family-friendly': { 
+    desc: { en: 'Fully equipped for the whole family, with safe play areas for children.', vi: 'Tiện nghi đầy đủ cho cả gia đình, có khu vui chơi an toàn cho trẻ em.' }, 
+    icon: 'family_restroom', color: 'text-blue-600 bg-blue-50' 
+  },
+  'Budget': { 
+    desc: { en: 'An economical choice with consistent service quality and affordable prices.', vi: 'Lựa chọn tiết kiệm với chất lượng dịch vụ ổn định và giá cả phải chăng.' }, 
+    icon: 'payments', color: 'text-slate-600 bg-slate-100' 
+  },
+  'Adventure': { 
+    desc: { en: 'For those who love exploring and vibrant outdoor activities.', vi: 'Dành cho những người yêu thích khám phá và các hoạt động ngoài trời sôi động.' }, 
+    icon: 'landscape', color: 'text-orange-600 bg-orange-50' 
+  },
+  'Cultural': { 
+    desc: { en: 'Discover the unique beauty of local culture and history.', vi: 'Khám phá nét đẹp văn hóa, lịch sử địa phương độc đáo.' }, 
+    icon: 'account_balance', color: 'text-brown-600 bg-stone-100' 
+  },
+  'Beach': { 
+    desc: { en: 'Enjoy a wonderful beach vacation with ocean views.', vi: 'Tận hưởng kỳ nghỉ tuyệt vời bên bờ biển với view hướng đại dương.' }, 
+    icon: 'beach_access', color: 'text-cyan-600 bg-cyan-50' 
+  },
+  'Business': { 
+    desc: { en: 'Fully equipped with facilities for work and important meetings.', vi: 'Trang bị đầy đủ tiện ích cho công việc và các cuộc họp quan trọng.' }, 
+    icon: 'business_center', color: 'text-indigo-600 bg-indigo-50' 
+  },
+  'Sustainable': { 
+    desc: { en: 'Committed to protecting the environment and developing sustainable tourism.', vi: 'Cam kết bảo vệ môi trường và phát triển du lịch bền vững.' }, 
+    icon: 'eco', color: 'text-green-600 bg-green-50' 
+  },
+};
+
 interface Hotel {
   hotel_id: number;
   name: string;
@@ -76,8 +122,9 @@ interface Hotel {
   star_rating: number;
   average_rating: number;
   location?: { name: string; country: string };
-  amenities?: string[]; // Already formatted as strings from backend
-  images?: string[];    // Already formatted as strings from backend
+  amenities?: any[]; 
+  images?: any[];    
+  tags?: { tag: { name: string } }[];
   rooms?: Room[];
 }
 
@@ -86,7 +133,9 @@ const FALLBACK_IMG = 'https://images.unsplash.com/photo-1566073771259-6a85060999
 export default function HotelDetailsPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { t, language } = useLanguage();
   const router = useRouter();
+  const { showToast } = useToast();
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -98,6 +147,7 @@ export default function HotelDetailsPage() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [bookingState, setBookingState] = useState({ checkIn: '', checkOut: '', guests: 2 });
+  const [showGallery, setShowGallery] = useState(false);
   const [isBooking, setIsBooking] = useState<number | null>(null);
 
   useEffect(() => {
@@ -111,7 +161,7 @@ export default function HotelDetailsPage() {
         if (hotelRes.data.success) {
           setHotel(hotelRes.data.data);
         } else {
-          setError(hotelRes.data.message || 'Hotel not found');
+          setError(hotelRes.data.message || t('hotel.notFound'));
         }
         // Convert BigInt review_id to string for safe rendering
         const rawReviews = reviewsRes.data?.data || [];
@@ -175,13 +225,13 @@ export default function HotelDetailsPage() {
   const handleBookRoom = async (roomId: number) => {
     if (!user) { router.push('/login'); return; }
     if (!bookingState.checkIn || !bookingState.checkOut) {
-      alert('Please select Check-in and Check-out dates first.');
+      showToast('Please select Check-in and Check-out dates first.', 'warning');
       return;
     }
     const checkInDate = new Date(bookingState.checkIn);
     const checkOutDate = new Date(bookingState.checkOut);
     if (checkOutDate <= checkInDate) {
-      alert('Check-out date must be after Check-in date.');
+      showToast('Check-out date must be after Check-in date.', 'warning');
       return;
     }
 
@@ -198,7 +248,7 @@ export default function HotelDetailsPage() {
         router.push(`/checkout/${res.data.data.booking_id}`);
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to create booking');
+      showToast(err.response?.data?.message || 'Failed to create booking', 'error');
     } finally {
       setIsBooking(null);
     }
@@ -217,20 +267,22 @@ export default function HotelDetailsPage() {
       <div className="bg-background-light min-h-screen flex items-center justify-center">
         <div className="text-center">
           <span className="material-symbols-outlined text-6xl text-slate-300 mb-4 block">error_outline</span>
-          <h2 className="text-2xl font-bold text-slate-700">{error || 'Hotel not found'}</h2>
-          <Link href="/explore" className="mt-4 inline-block text-primary font-semibold hover:underline">← Back to Explore</Link>
+          <h2 className="text-2xl font-bold text-slate-700">{error || t('hotel.notFound')}</h2>
+          <Link href="/explore" className="mt-4 inline-block text-primary font-semibold hover:underline">← {t('hotel.backToExplore')}</Link>
         </div>
       </div>
     );
   }
 
-  // images is already string[] from API
-  const heroImages = hotel.images && hotel.images.length > 0
-    ? [...hotel.images, FALLBACK_IMG, FALLBACK_IMG, FALLBACK_IMG].slice(0, 4)
+  // images is object[] from API: [{image_url: string}, ...]
+  const hotelImageUrls = hotel.images?.map((img: any) => img.image_url) || [];
+  
+  const heroImages = hotelImageUrls.length > 0
+    ? [...hotelImageUrls, FALLBACK_IMG, FALLBACK_IMG, FALLBACK_IMG].slice(0, 4)
     : [FALLBACK_IMG, FALLBACK_IMG, FALLBACK_IMG, FALLBACK_IMG];
 
-  // amenities is already string[] from API
-  const amenities: string[] = hotel.amenities && hotel.amenities.length > 0
+  // amenities can be string[] (fallback) or object[] (from API)
+  const amenities: any[] = hotel.amenities && hotel.amenities.length > 0
     ? hotel.amenities
     : ['Free Wi-Fi', 'Swimming Pool', 'Spa & Wellness', 'Fitness Center', 'Restaurant', '24/7 Front Desk'];
 
@@ -246,70 +298,56 @@ export default function HotelDetailsPage() {
 
   return (
     <div className="bg-background-light font-display text-slate-900 antialiased min-h-screen">
-      {/* === Stitch Header: Hotel Details & Booking === */}
-      <header className="sticky top-0 z-50 glass flex items-center justify-between whitespace-nowrap border-b border-white/30 px-6 lg:px-20 py-3">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3 text-primary">
-            <div className="size-8 flex items-center justify-center bg-primary rounded-lg text-white">
-              <span className="material-symbols-outlined">sailing</span>
-            </div>
-            <Link href="/" className="text-slate-900 text-xl font-extrabold leading-tight tracking-tight">WebTravel</Link>
+      {/* Gallery Modal */}
+      {showGallery && (
+        <div className="fixed inset-0 z-[100] bg-white overflow-y-auto">
+          <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b">
+            <h2 className="text-xl font-bold">{t('hotel.galleryTitle').replace('{name}', hotel.name)}</h2>
+            <button 
+              onClick={() => setShowGallery(false)}
+              className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
           </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/explore" className="text-slate-600 hover:text-primary transition-colors text-sm font-semibold">Hotels</Link>
-            <a className="text-slate-600 hover:text-primary transition-colors text-sm font-semibold" href="#">Flights</a>
-            <a className="text-slate-600 hover:text-primary transition-colors text-sm font-semibold" href="#">Car Rental</a>
-            {user && (user.role === 'HOST' || user.role === 'ADMIN') && (
-              <Link href="/host/dashboard" className="text-primary font-bold text-sm">Host Dashboard</Link>
-            )}
-          </nav>
-        </div>
-        <div className="flex flex-1 justify-end gap-4 items-center">
-          {user ? (
-            <>
-              <button
-                onClick={toggleFavorite}
-                disabled={togglingFav}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all ${isFavorite ? 'bg-rose-50 text-rose-500 border-rose-200' : 'bg-white text-slate-600 border-slate-200 hover:border-rose-200 hover:text-rose-500'}`}
-              >
-                <span className="material-symbols-outlined text-lg">{isFavorite ? 'favorite' : 'favorite_border'}</span>
-                {togglingFav ? '...' : isFavorite ? 'Saved' : 'Save'}
-              </button>
-              <Link href="/profile" className="h-9 w-9 rounded-full bg-primary/20 border-2 border-white flex items-center justify-center text-primary font-bold text-sm">
-                {user.full_name?.charAt(0).toUpperCase() || 'U'}
-              </Link>
-            </>
-          ) : (
-            <div className="flex gap-3">
-              <Link href="/register" className="bg-primary text-white px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20">Sign Up</Link>
-              <Link href="/login" className="bg-white text-slate-900 px-5 py-2 rounded-xl text-sm font-bold border border-slate-200">Log In</Link>
+          <div className="max-w-5xl mx-auto p-6 md:p-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {hotelImageUrls.length > 0 ? hotelImageUrls.map((url, idx) => (
+                <div key={idx} className={`rounded-2xl overflow-hidden bg-slate-100 ${idx === 0 ? 'md:col-span-2 aspect-video' : 'aspect-square'}`}>
+                  <img src={url} alt={`${hotel.name} ${idx + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                </div>
+              )) : (
+                <div className="col-span-full py-20 text-center text-slate-400 font-medium">No photos available.</div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </header>
+      )}
+
+      {/* Removed redundant local header to use global Header component */}
 
       <main className="max-w-7xl mx-auto px-4 lg:px-10 py-8 w-full">
         {/* Hero masonry */}
         <section className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-3 h-[400px] md:h-[500px] mb-8 overflow-hidden rounded-2xl">
-          <div className="md:col-span-2 md:row-span-2 relative group cursor-pointer overflow-hidden bg-slate-200">
+          <div onClick={() => setShowGallery(true)} className="md:col-span-2 md:row-span-2 relative group cursor-pointer overflow-hidden bg-slate-200">
             <img src={heroImages[0]} alt="Hero 1" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
           </div>
-          <div className="md:col-span-1 md:row-span-1 relative group cursor-pointer overflow-hidden bg-slate-200">
+          <div onClick={() => setShowGallery(true)} className="md:col-span-1 md:row-span-1 relative group cursor-pointer overflow-hidden bg-slate-200">
             <img src={heroImages[1]} alt="Hero 2" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }} />
           </div>
-          <div className="md:col-span-1 md:row-span-1 relative group cursor-pointer overflow-hidden bg-slate-200">
+          <div onClick={() => setShowGallery(true)} className="md:col-span-1 md:row-span-1 relative group cursor-pointer overflow-hidden bg-slate-200">
             <img src={heroImages[2]} alt="Hero 3" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }} />
           </div>
-          <div className="md:col-span-2 md:row-span-1 relative group cursor-pointer overflow-hidden bg-slate-200">
+          <div onClick={() => setShowGallery(true)} className="md:col-span-2 md:row-span-1 relative group cursor-pointer overflow-hidden bg-slate-200">
             <img src={heroImages[3]} alt="Hero 4" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }} />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="bg-white text-slate-900 px-6 py-2 rounded-full font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined">grid_view</span> View all photos
+              <button className="bg-white text-slate-900 px-6 py-2 rounded-full font-bold flex items-center gap-2 shadow-lg">
+                <span className="material-symbols-outlined">grid_view</span> {t('hotel.viewAllPhotos')}
               </button>
             </div>
           </div>
@@ -331,11 +369,21 @@ export default function HotelDetailsPage() {
                 <div className="flex flex-col items-end gap-2 shrink-0">
                   <div className="bg-primary/10 text-primary px-4 py-2 rounded-xl border border-primary/20 flex items-center gap-2">
                     <span className="font-bold text-lg">{hotel.average_rating || 'New'}</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">{Number(hotel.average_rating) > 4.5 ? 'Excellent' : 'Good'}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">{Number(hotel.average_rating) > 4.5 ? t('hotel.excellent') : t('hotel.good')}</span>
                   </div>
+                  {user && (
+                    <button
+                      onClick={toggleFavorite}
+                      disabled={togglingFav}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all shadow-sm ${isFavorite ? 'bg-rose-50 text-rose-500 border-rose-200' : 'bg-white text-slate-600 border-slate-200 hover:border-rose-200 hover:text-rose-500'}`}
+                    >
+                      <span className="material-symbols-outlined text-lg leading-none">{isFavorite ? 'favorite' : 'favorite_border'}</span>
+                      {isFavorite ? t('common.saved') : t('common.save')}
+                    </button>
+                  )}
                   <div className="flex gap-0.5 text-amber-400">
                     {Array.from({ length: hotel.star_rating || 5 }).map((_, i) => (
-                      <span key={i} className="material-symbols-outlined">star</span>
+                      <span key={i} className="material-symbols-outlined text-base">star</span>
                     ))}
                   </div>
                 </div>
@@ -343,12 +391,12 @@ export default function HotelDetailsPage() {
 
               {/* Amenities chips */}
               <div>
-                <h3 className="text-base font-bold text-slate-700 mb-3">Hotel Amenities</h3>
+                <h3 className="text-base font-bold text-slate-700 mb-3">{t('hotel.amenities')}</h3>
                 <div className="flex flex-wrap gap-2">
-                  {amenities.map((amenity: string, idx: number) => (
+                  {amenities.map((amenity: any, idx: number) => (
                     <div key={idx} className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-slate-200 text-slate-700 text-sm font-medium shadow-sm">
                       <span className="material-symbols-outlined text-primary text-base">{getAmenityIcon(amenity)}</span>
-                      {amenity}
+                      {typeof amenity === 'string' ? amenity : amenity.amenity_name}
                     </div>
                   ))}
                 </div>
@@ -357,13 +405,37 @@ export default function HotelDetailsPage() {
 
             {/* About */}
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-slate-900">About this Hotel</h3>
-              <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">{hotel.description || 'Experience premium luxury and comfort at its finest.'}</p>
+              <h3 className="text-2xl font-bold text-slate-900">{t('hotel.about')}</h3>
+              <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">{hotel.description || t('hotel.defaultDescription')}</p>
             </div>
+
+            {/* Experience Tags Descriptions */}
+            {hotel.tags && hotel.tags.length > 0 && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-slate-900">{t('hotel.perfectFor')}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {hotel.tags.map((t, idx) => {
+                    const tagName = t.tag.name;
+                    const config = TAG_DESCRIPTIONS[tagName] || { desc: 'Trải nghiệm dịch vụ tuyệt vời tại khách sạn này.', icon: 'star', color: 'text-slate-600 bg-slate-50' };
+                    return (
+                      <div key={idx} className={`p-5 rounded-2xl border border-transparent transition-all hover:shadow-md ${config.color.split(' ')[1]} flex items-start gap-4`}>
+                        <div className={`p-3 rounded-xl bg-white shadow-sm ${config.color.split(' ')[0]}`}>
+                          <span className="material-symbols-outlined text-2xl">{config.icon}</span>
+                        </div>
+                        <div>
+                          <h4 className={`font-bold text-lg ${config.color.split(' ')[0]}`}>{tagName}</h4>
+                          <p className="text-slate-600 text-sm mt-1 leading-relaxed">{(config.desc as any)[language]}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Room Selection */}
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-slate-900">Choose Your Room</h3>
+              <h3 className="text-2xl font-bold text-slate-900">{t('hotel.chooseRoom')}</h3>
               <div className="flex flex-col gap-4">
                 {hotel.rooms && hotel.rooms.length > 0 ? hotel.rooms.map((room) => (
                   <div key={room.room_id} className="glass-card group flex flex-col md:flex-row rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 border border-slate-200/50">
@@ -380,7 +452,7 @@ export default function HotelDetailsPage() {
                         <div>
                           <h4 className="text-xl font-bold text-slate-900">{room.room_type}</h4>
                           <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
-                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-base">group</span> {room.capacity} Guests</span>
+                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-base">group</span> {room.capacity} {t('hotel.guests')}</span>
                             <span className="flex items-center gap-1"><span className="material-symbols-outlined text-base">king_bed</span> 1 King Bed</span>
                           </div>
                         </div>
@@ -389,25 +461,24 @@ export default function HotelDetailsPage() {
                             ${nights > 0 ? (Number(room.price) * nights).toFixed(0) : Number(room.price).toFixed(0)}
                           </p>
                           <p className="text-xs text-slate-400 font-medium">
-                            {nights > 0 ? `for ${nights} night${nights > 1 ? 's' : ''}` : 'per night'}
+                            {nights > 0 ? `${t('hotel.for')} ${nights} ${t('hotel.nights')}` : t('hotel.perNight')}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200/50">
                         <ul className="flex gap-4 text-xs font-semibold">
                           {room.is_available ? (
-                            <li className="flex items-center gap-1 text-green-600"><span className="material-symbols-outlined text-sm">check_circle</span> Available</li>
+                            <li className="flex items-center gap-1 text-green-600"><span className="material-symbols-outlined text-sm">check_circle</span> {t('hotel.available')}</li>
                           ) : (
-                            <li className="flex items-center gap-1 text-rose-500"><span className="material-symbols-outlined text-sm">cancel</span> Sold Out</li>
+                            <li className="flex items-center gap-1 text-rose-500"><span className="material-symbols-outlined text-sm">cancel</span> {t('hotel.soldOut')}</li>
                           )}
                         </ul>
                         <button
                           onClick={() => handleBookRoom(room.room_id)}
                           disabled={!room.is_available || isBooking === room.room_id}
-                          title={room.is_available ? 'Select this room for booking' : 'Not available'}
                           className={`px-6 py-2.5 rounded-xl font-bold transition-all active:scale-95 shadow-md ${room.is_available ? 'bg-primary hover:bg-primary/90 text-white shadow-primary/30' : 'bg-slate-200 text-slate-400 cursor-not-allowed'} flex items-center justify-center`}
                         >
-                          {isBooking === room.room_id ? <span className="material-symbols-outlined animate-spin text-sm">sync</span> : 'Select Room'}
+                          {isBooking === room.room_id ? <span className="material-symbols-outlined animate-spin text-sm">sync</span> : t('hotel.selectRoom')}
                         </button>
                       </div>
                     </div>
@@ -423,7 +494,7 @@ export default function HotelDetailsPage() {
 
             {/* Reviews Section */}
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-slate-900">Guest Reviews ({reviews.length})</h3>
+              <h3 className="text-2xl font-bold text-slate-900">{t('hotel.guestReviews')} ({reviews.length})</h3>
 
               {/* Write a review */}
               {user ? (
@@ -502,12 +573,12 @@ export default function HotelDetailsPage() {
               <div className="flex justify-between items-end">
                 <div>
                   <span className="text-sm font-semibold text-slate-500">
-                    {nights > 0 ? 'Total estimated from' : 'Starting from'}
+                    {nights > 0 ? t('hotel.totalEstimated') : t('hotel.startingFrom')}
                   </span>
                   <h4 className="text-3xl font-black text-slate-900 leading-none mt-1">
                     {minPrice ? (nights > 0 ? `$${minPrice * nights}` : `$${minPrice}`) : '--'}
                     <span className="text-sm font-medium text-slate-500">
-                      {nights > 0 ? ` / ${nights} night${nights > 1 ? 's' : ''}` : '/night'}
+                      {nights > 0 ? ` / ${nights} ${t('hotel.nights')}` : `/${t('hotel.perNight')}`}
                     </span>
                   </h4>
                 </div>
@@ -530,10 +601,10 @@ export default function HotelDetailsPage() {
                 <div className="col-span-2 bg-white p-3">
                   <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Guests</label>
                   <select value={bookingState.guests} onChange={e => setBookingState(s => ({ ...s, guests: Number(e.target.value) }))} className="w-full text-sm font-bold border-none p-0 focus:ring-0 bg-transparent outline-none">
-                    <option value={1}>1 Adult</option>
-                    <option value={2}>2 Adults</option>
-                    <option value={3}>2 Adults, 1 Child</option>
-                    <option value={4}>2 Adults, 2 Children</option>
+                    <option value={1}>1 {t('hotel.adult')}</option>
+                    <option value={2}>2 {t('hotel.adults')}</option>
+                    <option value={3}>2 {t('hotel.adults')}, 1 {t('hotel.child')}</option>
+                    <option value={4}>2 {t('hotel.adults')}, 2 {t('hotel.children')}</option>
                   </select>
                 </div>
               </div>
@@ -543,17 +614,17 @@ export default function HotelDetailsPage() {
                 onClick={() => {
                   if (!user) { router.push('/login'); return; }
                   if (!bookingState.checkIn || !bookingState.checkOut) {
-                    alert('Please select Check-in and Check-out dates first.');
+                    showToast(t('hotel.selectDatesFirst'), 'warning');
                     return;
                   }
-                  alert('Please select a specific room from the "Choose Your Room" section below to proceed.');
+                  showToast(t('hotel.selectRoomBelow'), 'info');
                   window.scrollTo({ top: document.body.scrollHeight / 2, behavior: 'smooth' });
                 }}
               >
-                Check Availability
+                {t('hotel.checkAvailability')}
               </button>
               <div className="text-center">
-                <p className="text-xs text-slate-400 font-medium italic">You won&apos;t be charged yet</p>
+                <p className="text-xs text-slate-400 font-medium italic">{t('hotel.notChargedYet')}</p>
               </div>
             </div>
 
@@ -565,7 +636,7 @@ export default function HotelDetailsPage() {
                   <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white ring-4 ring-white/30 animate-pulse shadow-xl">
                     <span className="material-symbols-outlined">location_on</span>
                   </div>
-                  <span className="mt-2 bg-white px-3 py-1 rounded-full text-xs font-bold shadow-md">View on Map</span>
+                  <span className="mt-2 bg-white px-3 py-1 rounded-full text-xs font-bold shadow-md">{t('hotel.viewOnMap')}</span>
                 </div>
               </div>
             </div>
@@ -573,21 +644,7 @@ export default function HotelDetailsPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-20 border-t border-slate-200 py-10 bg-white">
-        <div className="max-w-7xl mx-auto px-4 lg:px-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-3 text-primary">
-            <span className="material-symbols-outlined text-2xl">sailing</span>
-            <h2 className="text-slate-900 text-lg font-bold">WebTravel</h2>
-          </div>
-          <div className="flex gap-8 text-sm font-medium text-slate-500">
-            <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-            <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
-            <a className="hover:text-primary transition-colors" href="#">Support</a>
-          </div>
-          <p className="text-xs text-slate-400">© 2024 WebTravel Inc. All rights reserved.</p>
-        </div>
-      </footer>
+      {/* Global footer is provided by ConditionalLayout */}
     </div>
   );
 }

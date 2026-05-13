@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as hotelService from '../services/hotel.service';
+import { getAIRecommendations, generateAIItinerary } from '../services/ai.service';
+import prisma from '../config/prisma';
 import { hotelSchema, updateHotelSchema } from '../schemas/hotel.schema';
 import { ZodError } from 'zod';
 
@@ -13,16 +15,92 @@ export const getHotels = async (req: Request, res: Response, next: NextFunction)
     
     const hotels = await hotelService.getAllHotels(locationId, ownerId);
     
-    // Formatting response
-    const formattedHotels = hotels.map((hotel: any) => ({
-      ...hotel,
-      tags: hotel.tags.map((t: any) => t.tag),
-      images: hotel.images.map((img: any) => img.image_url),
-      amenities: hotel.amenities.map((amenity: any) => amenity.amenity_name)
-    }));
+    // Default sorting: highest rating first
+    hotels.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
 
-    res.json({ success: true, count: formattedHotels.length, data: formattedHotels });
+    res.json({ success: true, count: hotels.length, data: hotels });
   } catch (error) {
+    next(error);
+  }
+};
+
+export const getRecommendedHotels = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // user_id comes from the JWT token via authenticate middleware
+    const userId = (req as any).user?.user_id;
+    if (!userId) {
+      res.json({ success: true, data: [], hasPreferences: false });
+      return;
+    }
+
+    const hotels = await hotelService.getAllHotels();
+    const recommended = await getAIRecommendations(userId, hotels);
+
+    console.log('DEBUG: Recommendations calculated:', recommended.length);
+
+    // Check if user has actually filled in preferences (not just has a record)
+    const userPreference = await prisma.userPreference.findUnique({ 
+      where: { user_id: userId } 
+    });
+    const hasPreferences = !!(
+      userPreference && 
+      (userPreference.travel_style?.trim() || userPreference.preferred_categories?.trim())
+    );
+
+    res.json({ 
+      success: true, 
+      data: recommended, // Remove slice limit
+      hasPreferences
+    });
+  } catch (error: any) {
+    console.error('DEBUG: Error in getRecommendedHotels:', error.message);
+    next(error);
+  }
+};
+
+export const getFilterMetadata = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const countries = await prisma.location.findMany({
+      select: { country: true },
+      distinct: ['country']
+    });
+
+    const amenities = await prisma.hotelAmenity.findMany({
+      select: { amenity_name: true },
+      distinct: ['amenity_name']
+    });
+
+    const travelStyles = await prisma.tag.findMany({
+      where: { type: 'travel_style' },
+      select: { name: true }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        countries: countries.map(c => c.country),
+        amenities: amenities.map(a => a.amenity_name),
+        travelStyles: travelStyles.map(t => t.name)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getItinerary = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as any).user?.user_id;
+    const locationId = parseInt(req.params.locationId as string, 10);
+
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const result = await generateAIItinerary(userId, locationId);
+    res.json(result);
+  } catch (error: any) {
     next(error);
   }
 };
@@ -39,44 +117,17 @@ export const getHotel = async (req: Request, res: Response, next: NextFunction) 
        res.status(404).json({ success: false, message: 'Hotel not found' });
        return;
     }
-    
-    // Formatting response
-    const formattedHotel = {
-      ...hotel,
-      tags: hotel.tags.map((t: any) => t.tag),
-      images: hotel.images.map((img: any) => img.image_url),
-      amenities: hotel.amenities.map((amenity: any) => amenity.amenity_name)
-    };
-
-    res.json({ success: true, data: formattedHotel });
+    res.json({ success: true, data: hotel });
   } catch (error) {
     next(error);
   }
 };
 
-export const createHotel = async (req: any, res: Response, next: NextFunction) => {
+export const createHotel = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = req.user;
-    let validatedData = hotelSchema.parse(req.body);
-
-    // If user is a HOST, they can only create hotels for themselves
-    if (user.role.toUpperCase() === 'HOST') {
-      validatedData.owner_id = user.user_id;
-    }
-
+    const validatedData = hotelSchema.parse(req.body);
     const hotel = await hotelService.createHotel(validatedData);
-    
-    const formattedHotel = {
-      ...hotel,
-      // @ts-ignore
-      tags: hotel.tags ? hotel.tags.map((t: any) => t.tag) : [],
-      // @ts-ignore
-      images: hotel.images ? hotel.images.map((img: any) => img.image_url) : [],
-      // @ts-ignore
-      amenities: hotel.amenities ? hotel.amenities.map((a: any) => a.amenity_name) : []
-    };
-
-    res.status(201).json({ success: true, data: formattedHotel });
+    res.status(201).json({ success: true, data: hotel });
   } catch (error: any) {
     if (error instanceof ZodError) {
        res.status(400).json({ success: false, message: 'Validation error', errors: error.issues });
@@ -86,47 +137,16 @@ export const createHotel = async (req: any, res: Response, next: NextFunction) =
   }
 };
 
-export const updateHotel = async (req: any, res: Response, next: NextFunction) => {
+export const updateHotel = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id as string, 10);
-    const user = req.user;
-
     if (isNaN(id)) {
       res.status(400).json({ success: false, message: 'Invalid hotel ID' });
       return;
     }
-
-    // Check ownership
-    const existingHotel = await hotelService.getHotelById(id);
-    if (!existingHotel) {
-      res.status(404).json({ success: false, message: 'Hotel not found' });
-      return;
-    }
-
-    if (user.role.toUpperCase() !== 'ADMIN' && existingHotel.owner_id !== user.user_id) {
-      res.status(403).json({ success: false, message: 'Forbidden: You do not own this hotel' });
-      return;
-    }
-
     const validatedData = updateHotelSchema.parse(req.body);
-    // Hosts cannot change the owner of the hotel
-    if (user.role.toUpperCase() === 'HOST') {
-      delete validatedData.owner_id;
-    }
-
     const hotel = await hotelService.updateHotel(id, validatedData);
-    
-    const formattedHotel = {
-      ...hotel,
-      // @ts-ignore
-      tags: hotel.tags ? hotel.tags.map((t: any) => t.tag) : [],
-      // @ts-ignore
-      images: hotel.images ? hotel.images.map((img: any) => img.image_url) : [],
-      // @ts-ignore
-      amenities: hotel.amenities ? hotel.amenities.map((a: any) => a.amenity_name) : []
-    };
-
-    res.json({ success: true, data: formattedHotel });
+    res.json({ success: true, data: hotel });
   } catch (error: any) {
     if (error instanceof ZodError) {
        res.status(400).json({ success: false, message: 'Validation error', errors: error.issues });
@@ -140,28 +160,13 @@ export const updateHotel = async (req: any, res: Response, next: NextFunction) =
   }
 };
 
-export const deleteHotel = async (req: any, res: Response, next: NextFunction) => {
+export const deleteHotel = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id as string, 10);
-    const user = req.user;
-
     if (isNaN(id)) {
       res.status(400).json({ success: false, message: 'Invalid hotel ID' });
       return;
     }
-
-    // Check ownership
-    const existingHotel = await hotelService.getHotelById(id);
-    if (!existingHotel) {
-      res.status(404).json({ success: false, message: 'Hotel not found' });
-      return;
-    }
-
-    if (user.role.toUpperCase() !== 'ADMIN' && existingHotel.owner_id !== user.user_id) {
-      res.status(403).json({ success: false, message: 'Forbidden: You do not own this hotel' });
-      return;
-    }
-
     await hotelService.deleteHotel(id);
     res.json({ success: true, message: 'Hotel deleted successfully' });
   } catch (error: any) {

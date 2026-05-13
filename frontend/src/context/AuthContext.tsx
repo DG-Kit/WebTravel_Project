@@ -73,7 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('token', newToken);
   };
 
-  const handleLogout = (redirect = true) => {
+  const handleLogout = async (redirect = true) => {
+    // Call backend to invalidate token in DB
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Silent fail — always clear local state regardless
+    }
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
